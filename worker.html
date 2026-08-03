@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Servo — Worker App</title>
+<style>
+  :root{
+    --orange:#f4791f; --orange-dark:#e0650c;
+    --bg:#f4f1ee; --ink:#1f1c19; --ink-soft:#7a736b;
+    --card-bg:#ffffff; --card-border:#eae5df; --radius:16px;
+    --red:#e0473f; --green:#25a35a;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"Segoe UI", system-ui, -apple-system, sans-serif; color:var(--ink); background:var(--bg);}
+  button{font-family:inherit; cursor:pointer;}
+  input, select{font-family:inherit;}
+  a{color:inherit;}
+
+  /* Auth screen */
+  #authScreen{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;}
+  .auth-box{
+    background:#fff; border-radius:var(--radius); padding:38px 32px; width:100%; max-width:380px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+  }
+  .auth-box h1{font-size:1.4rem; margin-bottom:4px;}
+  .auth-box p.sub{color:var(--ink-soft); font-size:.88rem; margin-bottom:22px;}
+  .auth-box input{
+    width:100%; padding:12px 14px; border:1px solid var(--card-border); border-radius:10px;
+    margin-bottom:12px; font-size:.95rem; outline:none;
+  }
+  .auth-box input:focus{border-color:var(--orange);}
+  .auth-box button.primary{
+    width:100%; background:var(--orange); color:#fff; border:none; padding:12px 0;
+    border-radius:10px; font-weight:700; margin-top:4px;
+  }
+  .auth-box button.primary:hover{background:var(--orange-dark);}
+  .switch-mode{text-align:center; font-size:.86rem; color:var(--ink-soft); margin-top:16px;}
+  .switch-mode a{color:var(--orange); font-weight:700; text-decoration:none;}
+  #authError{color:var(--red); font-size:.85rem; margin-top:10px; display:none;}
+
+  /* App shell */
+  #appScreen{display:none;}
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 24px; background:#fbfaf8; border-bottom:1px solid #efe9e2;
+    position:sticky; top:0; z-index:20;
+  }
+  .logo{font-size:1.2rem; font-weight:800; display:flex; align-items:center; gap:8px;}
+  .logo .tag{font-size:.68rem; font-weight:700; color:#fff; background:var(--orange); padding:2px 8px; border-radius:999px;}
+  .logout-btn{background:none; border:1px solid var(--card-border); padding:8px 14px; border-radius:8px; font-weight:600; font-size:.82rem;}
+  .logout-btn:hover{border-color:var(--red); color:var(--red);}
+
+  .container{max-width:520px; margin:0 auto; padding:28px 20px 60px;}
+
+  /* Status banner */
+  .status-banner{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 20px; border-radius:var(--radius); margin-bottom:22px;
+    font-size:.88rem; font-weight:600;
+  }
+  .status-banner.approved{background:#e7f7ee; color:var(--green);}
+  .status-banner.pending{background:#fff4e5; color:#8a5a1a;}
+
+  .avail-toggle{display:flex; align-items:center; gap:10px;}
+  .switch{position:relative; width:46px; height:26px;}
+  .switch input{opacity:0; width:0; height:0;}
+  .slider{position:absolute; cursor:pointer; inset:0; background:#ccc; border-radius:999px; transition:.2s;}
+  .slider:before{position:absolute; content:""; height:20px; width:20px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.2s;}
+  input:checked + .slider{background:var(--green);}
+  input:checked + .slider:before{transform:translateX(20px);}
+
+  .card{background:#fff; border:1px solid var(--card-border); border-radius:var(--radius); padding:26px 24px; margin-bottom:20px;}
+  .card h2{font-size:1.05rem; margin-bottom:18px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:.8rem; font-weight:600; margin-bottom:6px; color:var(--ink-soft);}
+  .field input, .field select{
+    width:100%; padding:11px 13px; border:1px solid var(--card-border); border-radius:9px; font-size:.9rem; outline:none;
+  }
+  .field input:focus, .field select:focus{border-color:var(--orange);}
+  .save-btn{
+    width:100%; background:var(--orange); color:#fff; border:none; padding:13px 0;
+    border-radius:9px; font-weight:700; font-size:.92rem; margin-top:6px;
+  }
+  .save-btn:hover{background:var(--orange-dark);}
+
+  .profile-view .row{display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f2efe9; font-size:.9rem;}
+  .profile-view .row:last-child{border-bottom:none;}
+  .profile-view .row .label{color:var(--ink-soft);}
+  .profile-view .row .val{font-weight:600;}
+  .edit-btn{margin-top:16px; width:100%; background:#f2efe9; color:var(--ink); border:none; padding:12px 0; border-radius:9px; font-weight:700; font-size:.88rem;}
+
+  .setup-warning{
+    background:#fff4e5; border:1px solid #f4c98f; color:#8a5a1a; padding:14px 18px; border-radius:10px;
+    margin-bottom:20px; font-size:.85rem; line-height:1.5; display:none;
+  }
+  .setup-warning.show{display:block;}
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:#fff; padding:12px 22px; border-radius:999px; font-size:.85rem;
+    display:none; z-index:200;
+  }
+  .toast.show{display:block;}
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="authScreen">
+  <div class="auth-box">
+    <h1 id="authTitle">🔧 Servo Worker</h1>
+    <p class="sub" id="authSub">Login to manage your provider profile</p>
+    <input type="email" id="authEmail" placeholder="Email">
+    <input type="password" id="authPassword" placeholder="Password">
+    <button class="primary" id="authSubmitBtn">Login</button>
+    <div id="authError"></div>
+    <div class="switch-mode">
+      <span id="switchText">Naya worker ho?</span> <a href="#" id="switchLink">Sign up</a>
+    </div>
+  </div>
+</div>
+
+<!-- APP SCREEN -->
+<div id="appScreen">
+  <header>
+    <div class="logo">🔧 Servo <span class="tag">WORKER</span></div>
+    <button class="logout-btn" id="logoutBtn">Logout</button>
+  </header>
+
+  <div class="container">
+    <div class="setup-warning" id="setupWarning">
+      ⚠️ Firebase config set nahi hai — ye app demo mode mein hai, profile save nahi hogi.
+    </div>
+
+    <!-- Shown once profile exists -->
+    <div id="statusBanner" class="status-banner" style="display:none;"></div>
+
+    <!-- PROFILE FORM (create or edit) -->
+    <div class="card" id="profileFormCard" style="display:none;">
+      <h2 id="profileFormTitle">Apni profile banaओ</h2>
+      <div class="field">
+        <label>Category</label>
+        <select id="pfCategory"></select>
+      </div>
+      <div class="field">
+        <label>Aapka naam</label>
+        <input type="text" id="pfName" placeholder="jaise Ramesh Kumar">
+      </div>
+      <div class="field">
+        <label>Description / Tag (jaise "Electrician • 8 yrs exp")</label>
+        <input type="text" id="pfTag" placeholder="jaise Electrician • 8 yrs exp">
+      </div>
+      <div class="field">
+        <label>Phone number (with +91)</label>
+        <input type="text" id="pfPhone" placeholder="+91XXXXXXXXXX">
+      </div>
+      <button class="save-btn" id="pfSaveBtn">Save Profile</button>
+    </div>
+
+    <!-- PROFILE VIEW (after created) -->
+    <div class="card profile-view" id="profileViewCard" style="display:none;">
+      <h2>Aapki Profile</h2>
+      <div class="row"><span class="label">Naam</span><span class="val" id="pvName"></span></div>
+      <div class="row"><span class="label">Category</span><span class="val" id="pvCategory"></span></div>
+      <div class="row"><span class="label">Tag</span><span class="val" id="pvTag"></span></div>
+      <div class="row"><span class="label">Phone</span><span class="val" id="pvPhone"></span></div>
+      <div class="row">
+        <span class="label">Available (customers ko dikhogे)</span>
+        <span class="avail-toggle">
+          <label class="switch">
+            <input type="checkbox" id="pvAvailableToggle">
+            <span class="slider"></span>
+          </label>
+        </span>
+      </div>
+      <button class="edit-btn" id="pvEditBtn">Edit Profile</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ============ SAME CONFIG AS admin-panel.html / servo-app.html ============
+  const firebaseConfig = {
+    apiKey: "AIzaSyCPs0Lr5Y4OFip5NwtHr03eY8E22NPpQLw",
+    authDomain: "servo-7da06.firebaseapp.com",
+    projectId: "servo-7da06",
+    storageBucket: "servo-7da06.firebasestorage.app",
+    messagingSenderId: "405990838311",
+    appId: "1:405990838311:web:53ad0ef505f6a1108ffe02"
+  };
+  // ============================================================================
+
+  let firebaseReady = false;
+  let app, auth, db;
+  try {
+    if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+      app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db = getFirestore(app);
+      firebaseReady = true;
+    }
+  } catch (e) {
+    console.error("Firebase init failed", e);
+  }
+
+  let mode = 'login'; // or 'signup'
+  let categories = [];
+  let currentProfile = null; // provider doc for logged-in worker
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2500);
+  }
+
+  // ---------- Mode switch (login/signup) ----------
+  const authTitle = document.getElementById('authTitle');
+  const authSub = document.getElementById('authSub');
+  const authSubmitBtn = document.getElementById('authSubmitBtn');
+  const switchText = document.getElementById('switchText');
+  const switchLink = document.getElementById('switchLink');
+
+  function setMode(m){
+    mode = m;
+    if(m === 'signup'){
+      authTitle.textContent = '🔧 Servo Worker';
+      authSub.textContent = 'Naya account banaओ (provider ke roop mein)';
+      authSubmitBtn.textContent = 'Sign Up';
+      switchText.textContent = 'Already account hai?';
+      switchLink.textContent = 'Login';
+    } else {
+      authTitle.textContent = '🔧 Servo Worker';
+      authSub.textContent = 'Login to manage your provider profile';
+      authSubmitBtn.textContent = 'Login';
+      switchText.textContent = 'Naya worker ho?';
+      switchLink.textContent = 'Sign up';
+    }
+    document.getElementById('authError').style.display = 'none';
+  }
+  switchLink.addEventListener('click', (e)=>{ e.preventDefault(); setMode(mode === 'login' ? 'signup' : 'login'); });
+
+  authSubmitBtn.addEventListener('click', async ()=>{
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    const errEl = document.getElementById('authError');
+    errEl.style.display = 'none';
+    if(!email || !password){ errEl.textContent = 'Email aur password dono zaroori hain'; errEl.style.display='block'; return; }
+    if(!firebaseReady){ errEl.textContent = 'Firebase configure nahi hai'; errEl.style.display='block'; return; }
+    try{
+      if(mode === 'signup'){
+        await createUserWithEmailAndPassword(auth, email, password);
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+    }catch(e){
+      errEl.textContent = e.message;
+      errEl.style.display = 'block';
+    }
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', ()=>{
+    if(firebaseReady) signOut(auth);
+  });
+
+  // ---------- Auth state ----------
+  if(firebaseReady){
+    onAuthStateChanged(auth, async (user)=>{
+      if(user){
+        document.getElementById('authScreen').style.display = 'none';
+        document.getElementById('appScreen').style.display = 'block';
+        await loadCategories();
+        await loadProfile(user.uid);
+      } else {
+        document.getElementById('authScreen').style.display = 'flex';
+        document.getElementById('appScreen').style.display = 'none';
+      }
+    });
+  } else {
+    document.getElementById('setupWarning').classList.add('show');
+  }
+
+  // ---------- Categories ----------
+  async function loadCategories(){
+    const snap = await getDocs(collection(db, 'categories'));
+    categories = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    const sel = document.getElementById('pfCategory');
+    sel.innerHTML = categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  }
+
+  // ---------- Profile load/save ----------
+  async function loadProfile(uid){
+    const ref = doc(db, 'providers', uid);
+    const snap = await getDoc(ref);
+    if(snap.exists()){
+      currentProfile = { id: uid, ...snap.data() };
+      showProfileView();
+    } else {
+      currentProfile = null;
+      showProfileForm(true);
+    }
+  }
+
+  function showProfileForm(isNew){
+    document.getElementById('profileFormCard').style.display = 'block';
+    document.getElementById('profileViewCard').style.display = 'none';
+    document.getElementById('statusBanner').style.display = 'none';
+    document.getElementById('profileFormTitle').textContent = isNew ? 'Apni profile banaओ' : 'Profile edit karo';
+    if(!isNew && currentProfile){
+      document.getElementById('pfCategory').value = currentProfile.categoryId;
+      document.getElementById('pfName').value = currentProfile.name;
+      document.getElementById('pfTag').value = currentProfile.tag;
+      document.getElementById('pfPhone').value = currentProfile.phone;
+    } else {
+      document.getElementById('pfName').value = '';
+      document.getElementById('pfTag').value = '';
+      document.getElementById('pfPhone').value = '+91';
+    }
+  }
+
+  function showProfileView(){
+    document.getElementById('profileFormCard').style.display = 'none';
+    document.getElementById('profileViewCard').style.display = 'block';
+    const cat = categories.find(c=>c.id === currentProfile.categoryId);
+    document.getElementById('pvName').textContent = currentProfile.name;
+    document.getElementById('pvCategory').textContent = cat ? cat.name : '(unknown)';
+    document.getElementById('pvTag').textContent = currentProfile.tag || '';
+    document.getElementById('pvPhone').textContent = currentProfile.phone || '';
+    document.getElementById('pvAvailableToggle').checked = currentProfile.available !== false;
+
+    const banner = document.getElementById('statusBanner');
+    banner.style.display = 'flex';
+    if(currentProfile.approved){
+      banner.className = 'status-banner approved';
+      banner.innerHTML = `<span>✅ Aapki profile verified hai — customers ko dikh rahi hai</span>`;
+    } else {
+      banner.className = 'status-banner pending';
+      banner.innerHTML = `<span>⏳ Admin approval ka wait hai — approve hote hi customers ko dikhegi</span>`;
+    }
+  }
+
+  document.getElementById('pfSaveBtn').addEventListener('click', async ()=>{
+    const categoryId = document.getElementById('pfCategory').value;
+    const name = document.getElementById('pfName').value.trim();
+    const tag = document.getElementById('pfTag').value.trim();
+    const phone = document.getElementById('pfPhone').value.trim();
+    if(!name || !phone || !categoryId){ showToast('Sab fields bharo'); return; }
+    if(!firebaseReady){ showToast('Firebase configure nahi hai'); return; }
+
+    const uid = auth.currentUser.uid;
+    const isNew = !currentProfile;
+    const data = {
+      categoryId, name, tag, phone,
+      rating: currentProfile ? currentProfile.rating : 4.5,
+      available: currentProfile ? currentProfile.available !== false : true,
+      approved: currentProfile ? !!currentProfile.approved : false, // new profiles need admin approval
+    };
+    await setDoc(doc(db, 'providers', uid), data);
+    currentProfile = { id: uid, ...data };
+    showToast(isNew ? 'Profile ban gayi! Admin approve karega jald hi.' : 'Profile update ho gayi!');
+    showProfileView();
+  });
+
+  document.getElementById('pvEditBtn').addEventListener('click', ()=> showProfileForm(false));
+
+  document.getElementById('pvAvailableToggle').addEventListener('change', async (e)=>{
+    if(!currentProfile || !firebaseReady) return;
+    const uid = auth.currentUser.uid;
+    await updateDoc(doc(db, 'providers', uid), { available: e.target.checked });
+    currentProfile.available = e.target.checked;
+    showToast(e.target.checked ? 'Ab aap "Available" dikhoge' : 'Ab aap "Busy" dikhoge');
+  });
+</script>
+
+</body>
+</html>

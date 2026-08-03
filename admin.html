@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Servo — Admin Panel</title>
+<style>
+  :root{
+    --orange:#f4791f; --orange-dark:#e0650c;
+    --bg:#f4f1ee; --ink:#1f1c19; --ink-soft:#7a736b;
+    --card-bg:#ffffff; --card-border:#eae5df; --radius:14px;
+    --red:#e0473f; --green:#25a35a;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"Segoe UI", system-ui, -apple-system, sans-serif; color:var(--ink); background:var(--bg);}
+  button{font-family:inherit; cursor:pointer;}
+  input, select{font-family:inherit;}
+
+  /* Login screen */
+  #loginScreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .login-box{
+    background:#fff; border-radius:var(--radius); padding:40px 34px; width:100%; max-width:380px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+  }
+  .login-box h1{font-size:1.4rem; margin-bottom:6px;}
+  .login-box p.sub{color:var(--ink-soft); font-size:.9rem; margin-bottom:24px;}
+  .login-box input{
+    width:100%; padding:12px 14px; border:1px solid var(--card-border); border-radius:10px;
+    margin-bottom:12px; font-size:.95rem; outline:none;
+  }
+  .login-box input:focus{border-color:var(--orange);}
+  .login-box button{
+    width:100%; background:var(--orange); color:#fff; border:none; padding:12px 0;
+    border-radius:10px; font-weight:700; margin-top:6px;
+  }
+  .login-box button:hover{background:var(--orange-dark);}
+  #loginError{color:var(--red); font-size:.85rem; margin-top:10px; display:none;}
+
+  /* App shell */
+  #appScreen{display:none;}
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 28px; background:#fbfaf8; border-bottom:1px solid #efe9e2;
+    position:sticky; top:0; z-index:20;
+  }
+  .logo{font-size:1.25rem; font-weight:800; display:flex; align-items:center; gap:8px;}
+  .logo .tag{font-size:.7rem; font-weight:700; color:#fff; background:var(--orange); padding:2px 8px; border-radius:999px;}
+  .header-right{display:flex; align-items:center; gap:14px; font-size:.85rem; color:var(--ink-soft);}
+  .logout-btn{background:none; border:1px solid var(--card-border); padding:8px 14px; border-radius:8px; font-weight:600; font-size:.82rem;}
+  .logout-btn:hover{border-color:var(--red); color:var(--red);}
+
+  .container{max-width:1100px; margin:0 auto; padding:28px 20px 60px;}
+
+  .stats-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:30px;}
+  .stat-card{background:#fff; border:1px solid var(--card-border); border-radius:var(--radius); padding:18px;}
+  .stat-card .num{font-size:1.6rem; font-weight:800;}
+  .stat-card .label{font-size:.8rem; color:var(--ink-soft);}
+
+  .tabs{display:flex; gap:8px; margin-bottom:22px; border-bottom:1px solid var(--card-border);}
+  .tab-btn{
+    padding:10px 18px; background:none; border:none; font-weight:600; font-size:.9rem;
+    color:var(--ink-soft); border-bottom:2px solid transparent;
+  }
+  .tab-btn.active{color:var(--orange); border-color:var(--orange);}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .panel-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:10px;}
+  .panel-header h2{font-size:1.2rem;}
+  .btn-primary{
+    background:var(--orange); color:#fff; border:none; padding:10px 18px; border-radius:8px; font-weight:700; font-size:.85rem;
+  }
+  .btn-primary:hover{background:var(--orange-dark);}
+  .btn-secondary{
+    background:#fff; color:var(--ink); border:1px solid var(--card-border); padding:10px 18px; border-radius:8px; font-weight:600; font-size:.85rem;
+  }
+  .btn-secondary:hover{border-color:var(--orange); color:var(--orange);}
+
+  table{width:100%; border-collapse:collapse; background:#fff; border-radius:var(--radius); overflow:hidden; border:1px solid var(--card-border);}
+  th{background:#fbfaf8; text-align:left; padding:12px 14px; font-size:.78rem; text-transform:uppercase; color:var(--ink-soft); border-bottom:1px solid var(--card-border);}
+  td{padding:12px 14px; font-size:.88rem; border-bottom:1px solid #f2efe9; vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .icon-cell{font-size:1.2rem;}
+  .row-actions{display:flex; gap:8px;}
+  .icon-btn{background:none; border:1px solid var(--card-border); padding:6px 10px; border-radius:6px; font-size:.78rem; font-weight:600;}
+  .icon-btn.edit:hover{border-color:var(--orange); color:var(--orange);}
+  .icon-btn.delete:hover{border-color:var(--red); color:var(--red);}
+  .empty-state{text-align:center; padding:50px 20px; color:var(--ink-soft);}
+
+  /* Modal */
+  .overlay{position:fixed; inset:0; background:rgba(20,17,14,.5); display:none; align-items:center; justify-content:center; z-index:100; padding:20px;}
+  .overlay.show{display:flex;}
+  .modal{background:#fff; border-radius:var(--radius); padding:28px; width:100%; max-width:420px; max-height:90vh; overflow-y:auto;}
+  .modal h3{font-size:1.15rem; margin-bottom:18px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:.8rem; font-weight:600; margin-bottom:6px; color:var(--ink-soft);}
+  .field input, .field select{
+    width:100%; padding:10px 12px; border:1px solid var(--card-border); border-radius:8px; font-size:.9rem; outline:none;
+  }
+  .field input:focus, .field select:focus{border-color:var(--orange);}
+  .modal-actions{display:flex; gap:10px; margin-top:20px;}
+  .modal-actions button{flex:1; padding:11px 0; border-radius:8px; font-weight:700; font-size:.88rem; border:none;}
+  .modal-actions .cancel{background:#f2efe9; color:var(--ink);}
+  .modal-actions .save{background:var(--orange); color:#fff;}
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:#fff; padding:12px 22px; border-radius:999px; font-size:.85rem;
+    display:none; z-index:200;
+  }
+  .toast.show{display:block;}
+
+  .setup-warning{
+    background:#fff4e5; border:1px solid #f4c98f; color:#8a5a1a; padding:14px 18px; border-radius:10px;
+    margin-bottom:20px; font-size:.85rem; line-height:1.5; display:none;
+  }
+  .setup-warning.show{display:block;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h1>🔧 Servo Admin</h1>
+    <p class="sub">Login to manage categories and providers</p>
+    <input type="email" id="loginEmail" placeholder="Admin email">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button id="loginBtn">Login</button>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appScreen">
+  <header>
+    <div class="logo">🔧 Servo <span class="tag">ADMIN</span></div>
+    <div class="header-right">
+      <span id="adminEmailLabel"></span>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="setup-warning" id="setupWarning">
+      ⚠️ Firebase config abhi set nahi hui hai (ya connect nahi ho pa rahi). Ye panel demo mode mein chal raha hai — changes save nahi honge. FIREBASE_SETUP.md guide follow karke apna config <code>firebaseConfig</code> object mein paste karo.
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="num" id="statCategories">0</div><div class="label">Categories</div></div>
+      <div class="stat-card"><div class="num" id="statProviders">0</div><div class="label">Total Providers</div></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="categories">Categories</button>
+      <button class="tab-btn" data-tab="providers">Providers</button>
+    </div>
+
+    <!-- CATEGORIES PANEL -->
+    <div class="panel active" id="categoriesPanel">
+      <div class="panel-header">
+        <h2>Categories</h2>
+        <div style="display:flex; gap:10px;">
+          <button class="btn-secondary" id="loadDefaultsBtn">Load Default Data</button>
+          <button class="btn-primary" id="addCategoryBtn">+ Add Category</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th></th><th>Category Name</th><th>Worker Type</th><th>Providers</th><th></th></tr></thead>
+        <tbody id="categoriesTable"></tbody>
+      </table>
+      <div class="empty-state" id="categoriesEmpty" style="display:none;">Koi category nahi hai abhi. "Load Default Data" dabaो ya "+ Add Category" se naya banaओ.</div>
+    </div>
+
+    <!-- PROVIDERS PANEL -->
+    <div class="panel" id="providersPanel">
+      <div class="panel-header">
+        <h2>Providers</h2>
+        <button class="btn-primary" id="addProviderBtn">+ Add Provider</button>
+      </div>
+      <table>
+        <thead><tr><th>Name</th><th>Category</th><th>Tag</th><th>Rating</th><th>Phone</th><th>Status</th><th></th></tr></thead>
+        <tbody id="providersTable"></tbody>
+      </table>
+      <div class="empty-state" id="providersEmpty" style="display:none;">Koi provider nahi hai abhi.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY MODAL -->
+<div class="overlay" id="categoryOverlay">
+  <div class="modal">
+    <h3 id="categoryModalTitle">Add Category</h3>
+    <div class="field"><label>Category Name (jaise "Bijli ka kaam")</label><input type="text" id="catNameInput"></div>
+    <div class="field"><label>Worker Type (jaise "Electrician")</label><input type="text" id="catWorkerInput"></div>
+    <div class="field"><label>Icon (ek emoji, jaise 🔌)</label><input type="text" id="catIconInput" maxlength="4"></div>
+    <div class="modal-actions">
+      <button class="cancel" id="catCancelBtn">Cancel</button>
+      <button class="save" id="catSaveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROVIDER MODAL -->
+<div class="overlay" id="providerOverlay">
+  <div class="modal">
+    <h3 id="providerModalTitle">Add Provider</h3>
+    <div class="field"><label>Category</label><select id="provCategoryInput"></select></div>
+    <div class="field"><label>Provider Name</label><input type="text" id="provNameInput"></div>
+    <div class="field"><label>Tag / Description (jaise "Electrician • 8 yrs exp")</label><input type="text" id="provTagInput"></div>
+    <div class="field"><label>Rating (1-5)</label><input type="number" id="provRatingInput" min="1" max="5" step="0.1"></div>
+    <div class="field"><label>Phone (with country code, jaise +919812345601)</label><input type="text" id="provPhoneInput"></div>
+    <div class="modal-actions">
+      <button class="cancel" id="provCancelBtn">Cancel</button>
+      <button class="save" id="provSaveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, collection, getDocs, doc, setDoc, deleteDoc, addDoc, writeBatch, updateDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ============ PASTE YOUR FIREBASE CONFIG HERE ============
+  const firebaseConfig = {
+    apiKey: "AIzaSyCPs0Lr5Y4OFip5NwtHr03eY8E22NPpQLw",
+    authDomain: "servo-7da06.firebaseapp.com",
+    projectId: "servo-7da06",
+    storageBucket: "servo-7da06.firebasestorage.app",
+    messagingSenderId: "405990838311",
+    appId: "1:405990838311:web:53ad0ef505f6a1108ffe02"
+  };
+  // ============================================================
+
+  let firebaseReady = false;
+  let app, auth, db;
+  try {
+    if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+      app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db = getFirestore(app);
+      firebaseReady = true;
+    }
+  } catch (e) {
+    console.error("Firebase init failed", e);
+  }
+
+  const DEFAULT_CATEGORIES = [
+    { id:"construction", name:"Construction ka kaam", worker:"Raj Mistri (Mason)", icon:"🧱" },
+    { id:"paint", name:"Paint karna", worker:"Painter / Paint Mistri", icon:"🎨" },
+    { id:"tiles", name:"Tiles lagana", worker:"Tile Mistri / Tile Installer", icon:"🧩" },
+    { id:"plumbing", name:"Paani aur pipe fitting", worker:"Plumber / Nal Mistri", icon:"🚰" },
+    { id:"electrical", name:"Bijli ka kaam", worker:"Electrician", icon:"🔌" },
+    { id:"carpentry", name:"Lakdi aur furniture", worker:"Carpenter (Badhai)", icon:"🪚" },
+    { id:"false_ceiling", name:"False Ceiling (POP/Gypsum)", worker:"False Ceiling Mistri / POP Mistri", icon:"🔲" },
+    { id:"aluminium", name:"Aluminium door-window", worker:"Aluminium Fabricator", icon:"🪟" },
+    { id:"glass", name:"Glass lagana", worker:"Glass Installer / Glazier", icon:"🔷" },
+    { id:"welding", name:"Steel grill, gate, railing", worker:"Welder / Fabricator", icon:"🔩" },
+    { id:"marble", name:"Marble aur Granite", worker:"Marble Mistri / Granite Installer", icon:"🪨" },
+    { id:"ac", name:"AC lagana aur repair", worker:"AC Technician", icon:"❄️" },
+    { id:"cctv", name:"CCTV lagana", worker:"CCTV Technician", icon:"📹" },
+    { id:"solar", name:"Solar panel lagana", worker:"Solar Technician", icon:"🌞" },
+    { id:"interior", name:"Interior design", worker:"Interior Designer", icon:"🛋️" },
+    { id:"architect", name:"Ghar ka naksha aur planning", worker:"Architect", icon:"🏗️" },
+    { id:"house_cleaning", name:"House Cleaning", worker:"House Cleaner", icon:"🧹" },
+    { id:"bathroom_cleaning", name:"Bathroom and Toilet Cleaning", worker:"Bathroom Cleaning Specialist", icon:"🚽" },
+    { id:"tank_cleaning", name:"Water Tank Cleaning", worker:"Tank Cleaning Technician", icon:"🛢️" },
+  ];
+
+  const DEFAULT_PROVIDERS = [
+    { categoryId:"construction", name:"Ramlal Mistri", tag:"Raj Mistri (Mason) • 10 yrs exp", rating:4.7, phone:"+919812345601" },
+    { categoryId:"construction", name:"Sharma Raj Mistri", tag:"Raj Mistri (Mason) • Construction Work", rating:4.6, phone:"+919812345602" },
+    { categoryId:"paint", name:"ColorCraft Ajay", tag:"Painter • Interior/Exterior", rating:4.7, phone:"+919812345610" },
+    { categoryId:"paint", name:"BrightWalls Studio", tag:"Painting Contractor", rating:4.5, phone:"+919812345611" },
+    { categoryId:"tiles", name:"Suresh Tile Works", tag:"Tile Mistri • Floor & Wall", rating:4.6, phone:"+919812345620" },
+    { categoryId:"tiles", name:"Ganesh Tiles", tag:"Tile Installer", rating:4.5, phone:"+919812345621" },
+    { categoryId:"plumbing", name:"Ramesh Kumar", tag:"Plumber • 6 yrs exp", rating:4.8, phone:"+919812345603" },
+    { categoryId:"plumbing", name:"Amit Solutions", tag:"Plumbing Services", rating:4.6, phone:"+919812345604" },
+    { categoryId:"plumbing", name:"Suresh & Sons", tag:"24x7 Plumber", rating:4.7, phone:"+919812345605" },
+    { categoryId:"electrical", name:"Vikram Electricals", tag:"Electrician • 8 yrs exp", rating:4.9, phone:"+919812345606" },
+    { categoryId:"electrical", name:"PowerFix Rahul", tag:"Home Wiring Expert", rating:4.5, phone:"+919812345607" },
+    { categoryId:"carpentry", name:"Deepak Woodworks", tag:"Carpenter • Furniture", rating:4.7, phone:"+919812345608" },
+    { categoryId:"carpentry", name:"Manoj Carpentry", tag:"Doors & Fittings", rating:4.4, phone:"+919812345609" },
+    { categoryId:"false_ceiling", name:"POP Arts Deepak", tag:"False Ceiling Mistri", rating:4.6, phone:"+919812345622" },
+    { categoryId:"false_ceiling", name:"Gypsum Creations", tag:"POP Mistri", rating:4.5, phone:"+919812345623" },
+    { categoryId:"aluminium", name:"Metro Aluminium Works", tag:"Aluminium Fabricator", rating:4.6, phone:"+919812345624" },
+    { categoryId:"aluminium", name:"Shine Aluminium Fabricators", tag:"Doors & Windows", rating:4.5, phone:"+919812345625" },
+    { categoryId:"glass", name:"Clear View Glass", tag:"Glass Installer / Glazier", rating:4.6, phone:"+919812345626" },
+    { categoryId:"glass", name:"Glassline Glaziers", tag:"Glass Fitting Services", rating:4.5, phone:"+919812345627" },
+    { categoryId:"welding", name:"Steel Craft Welding", tag:"Welder / Fabricator", rating:4.7, phone:"+919812345628" },
+    { categoryId:"welding", name:"Iron Gate Fabricators", tag:"Grill & Railing Work", rating:4.5, phone:"+919812345629" },
+    { categoryId:"marble", name:"Marble Palace", tag:"Marble Mistri", rating:4.7, phone:"+919812345630" },
+    { categoryId:"marble", name:"Granite World Installers", tag:"Granite Installer", rating:4.5, phone:"+919812345631" },
+    { categoryId:"ac", name:"CoolTech Sanjay", tag:"AC Repair & Service", rating:4.8, phone:"+919812345612" },
+    { categoryId:"ac", name:"Frostline Services", tag:"AC Installation", rating:4.6, phone:"+919812345613" },
+    { categoryId:"cctv", name:"SecureView CCTV", tag:"CCTV Technician", rating:4.7, phone:"+919812345632" },
+    { categoryId:"cctv", name:"EyeWatch Installations", tag:"CCTV & Security Setup", rating:4.5, phone:"+919812345633" },
+    { categoryId:"solar", name:"SunPower Solar", tag:"Solar Technician", rating:4.7, phone:"+919812345634" },
+    { categoryId:"solar", name:"Green Energy Solar", tag:"Solar Panel Installation", rating:4.6, phone:"+919812345635" },
+    { categoryId:"interior", name:"Design Studio Interiors", tag:"Interior Designer", rating:4.8, phone:"+919812345636" },
+    { categoryId:"interior", name:"HomeCraft Interiors", tag:"Interior Design & Decor", rating:4.6, phone:"+919812345637" },
+    { categoryId:"architect", name:"Build Right Architects", tag:"Architect", rating:4.8, phone:"+919812345638" },
+    { categoryId:"architect", name:"Vaastu Design Associates", tag:"Architect & Planning", rating:4.6, phone:"+919812345639" },
+    { categoryId:"house_cleaning", name:"SparkleHome Team", tag:"House Cleaner • Deep Cleaning", rating:4.9, phone:"+919812345640" },
+    { categoryId:"house_cleaning", name:"QuickClean Priya", tag:"Home & Office Cleaning", rating:4.6, phone:"+919812345641" },
+    { categoryId:"bathroom_cleaning", name:"HygieneFirst Services", tag:"Bathroom Cleaning Specialist", rating:4.7, phone:"+919812345642" },
+    { categoryId:"bathroom_cleaning", name:"FreshBath Cleaners", tag:"Toilet Deep Cleaning", rating:4.5, phone:"+919812345643" },
+    { categoryId:"tank_cleaning", name:"AquaClean Tank Services", tag:"Tank Cleaning Technician", rating:4.7, phone:"+919812345644" },
+    { categoryId:"tank_cleaning", name:"PureTank Solutions", tag:"Water Tank Cleaning & Disinfection", rating:4.6, phone:"+919812345645" },
+  ];
+
+  let categories = [];
+  let providers = [];
+  let editingCategoryId = null;
+  let editingProviderId = null;
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2500);
+  }
+
+  // ---------- AUTH ----------
+  document.getElementById('loginBtn').addEventListener('click', async ()=>{
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errEl = document.getElementById('loginError');
+    errEl.style.display = 'none';
+    if(!firebaseReady){
+      errEl.textContent = "Firebase configure nahi hai. FIREBASE_SETUP.md follow karo pehle.";
+      errEl.style.display = 'block';
+      return;
+    }
+    try{
+      await signInWithEmailAndPassword(auth, email, password);
+    }catch(e){
+      errEl.textContent = "Login failed: " + e.message;
+      errEl.style.display = 'block';
+    }
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', ()=>{
+    if(firebaseReady) signOut(auth);
+    else { document.getElementById('appScreen').style.display='none'; document.getElementById('loginScreen').style.display='flex'; }
+  });
+
+  function enterApp(email){
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+    document.getElementById('adminEmailLabel').textContent = email || 'Demo mode';
+    document.getElementById('setupWarning').classList.toggle('show', !firebaseReady);
+    loadData();
+  }
+
+  if(firebaseReady){
+    onAuthStateChanged(auth, (user)=>{
+      if(user) enterApp(user.email);
+      else { document.getElementById('appScreen').style.display='none'; document.getElementById('loginScreen').style.display='flex'; }
+    });
+  } else {
+    document.getElementById('setupWarning').classList.add('show');
+  }
+
+  // ---------- DATA LOADING ----------
+  async function loadData(){
+    if(!firebaseReady){
+      categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+      providers = DEFAULT_PROVIDERS.map((p,i)=>({...p, id:'demo_'+i}));
+      renderAll();
+      return;
+    }
+    const catSnap = await getDocs(collection(db, 'categories'));
+    categories = catSnap.docs.map(d=>({id:d.id, ...d.data()}));
+    const provSnap = await getDocs(collection(db, 'providers'));
+    providers = provSnap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderAll();
+  }
+
+  document.getElementById('loadDefaultsBtn').addEventListener('click', async ()=>{
+    if(!confirm("Ye 19 default categories aur unke providers Firestore mein load karega. Continue?")) return;
+    if(!firebaseReady){ showToast("Firebase configure nahi hai — demo mode mein ye kaam nahi karega"); return; }
+    const batch = writeBatch(db);
+    DEFAULT_CATEGORIES.forEach(cat=>{
+      batch.set(doc(db, 'categories', cat.id), { name:cat.name, worker:cat.worker, icon:cat.icon });
+    });
+    DEFAULT_PROVIDERS.forEach(p=>{
+      const ref = doc(collection(db, 'providers'));
+      batch.set(ref, { ...p, approved: true, available: true });
+    });
+    await batch.commit();
+    showToast("Default data load ho gaya!");
+    loadData();
+  });
+
+  // ---------- RENDER ----------
+  function renderAll(){
+    document.getElementById('statCategories').textContent = categories.length;
+    document.getElementById('statProviders').textContent = providers.length;
+    renderCategoriesTable();
+    renderProvidersTable();
+    populateCategorySelect();
+  }
+
+  function renderCategoriesTable(){
+    const tbody = document.getElementById('categoriesTable');
+    tbody.innerHTML = '';
+    document.getElementById('categoriesEmpty').style.display = categories.length ? 'none' : 'block';
+    categories.forEach(cat=>{
+      const count = providers.filter(p=>p.categoryId === cat.id).length;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="icon-cell">${cat.icon||''}</td>
+        <td>${cat.name}</td>
+        <td>${cat.worker||''}</td>
+        <td>${count}</td>
+        <td><div class="row-actions">
+          <button class="icon-btn edit" data-id="${cat.id}">Edit</button>
+          <button class="icon-btn delete" data-id="${cat.id}">Delete</button>
+        </div></td>
+      `;
+      tr.querySelector('.edit').addEventListener('click', ()=>openCategoryModal(cat));
+      tr.querySelector('.delete').addEventListener('click', ()=>deleteCategory(cat));
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderProvidersTable(){
+    const tbody = document.getElementById('providersTable');
+    tbody.innerHTML = '';
+    document.getElementById('providersEmpty').style.display = providers.length ? 'none' : 'block';
+    providers.forEach(p=>{
+      const cat = categories.find(c=>c.id === p.categoryId);
+      const isApproved = p.approved !== false; // admin-added providers (no field) count as approved
+      const availText = p.available === false ? ' • 🔴 Busy' : ' • 🟢 Available';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${p.name}</td>
+        <td>${cat ? cat.name : '(unknown)'}</td>
+        <td>${p.tag||''}</td>
+        <td>⭐ ${p.rating||'-'}</td>
+        <td>${p.phone||''}</td>
+        <td>${isApproved ? '✅ Approved' : '⏳ Pending'}${p.hasOwnProperty('available') ? availText : ''}</td>
+        <td><div class="row-actions">
+          ${isApproved ? '' : `<button class="icon-btn approve" data-id="${p.id}" style="border-color:var(--green); color:var(--green);">Approve</button>`}
+          <button class="icon-btn edit" data-id="${p.id}">Edit</button>
+          <button class="icon-btn delete" data-id="${p.id}">Delete</button>
+        </div></td>
+      `;
+      tr.querySelector('.edit').addEventListener('click', ()=>openProviderModal(p));
+      tr.querySelector('.delete').addEventListener('click', ()=>deleteProvider(p));
+      const approveBtn = tr.querySelector('.approve');
+      if(approveBtn) approveBtn.addEventListener('click', ()=>approveProvider(p));
+      tbody.appendChild(tr);
+    });
+  }
+
+  function populateCategorySelect(){
+    const sel = document.getElementById('provCategoryInput');
+    sel.innerHTML = categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  }
+
+  // ---------- TABS ----------
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab + 'Panel').classList.add('active');
+    });
+  });
+
+  // ---------- CATEGORY CRUD ----------
+  function openCategoryModal(cat){
+    editingCategoryId = cat ? cat.id : null;
+    document.getElementById('categoryModalTitle').textContent = cat ? 'Edit Category' : 'Add Category';
+    document.getElementById('catNameInput').value = cat ? cat.name : '';
+    document.getElementById('catWorkerInput').value = cat ? cat.worker : '';
+    document.getElementById('catIconInput').value = cat ? cat.icon : '';
+    document.getElementById('categoryOverlay').classList.add('show');
+  }
+  document.getElementById('addCategoryBtn').addEventListener('click', ()=>openCategoryModal(null));
+  document.getElementById('catCancelBtn').addEventListener('click', ()=>document.getElementById('categoryOverlay').classList.remove('show'));
+
+  document.getElementById('catSaveBtn').addEventListener('click', async ()=>{
+    const name = document.getElementById('catNameInput').value.trim();
+    const worker = document.getElementById('catWorkerInput').value.trim();
+    const icon = document.getElementById('catIconInput').value.trim() || '🔧';
+    if(!name){ showToast('Category name zaroori hai'); return; }
+    if(!firebaseReady){ showToast('Firebase configure nahi hai — save nahi hoga (demo mode)'); document.getElementById('categoryOverlay').classList.remove('show'); return; }
+
+    if(editingCategoryId){
+      await setDoc(doc(db, 'categories', editingCategoryId), { name, worker, icon });
+    } else {
+      const id = name.toLowerCase().replace(/[^a-z0-9]+/g,'_').slice(0,40) + '_' + Date.now();
+      await setDoc(doc(db, 'categories', id), { name, worker, icon });
+    }
+    document.getElementById('categoryOverlay').classList.remove('show');
+    showToast('Category saved!');
+    loadData();
+  });
+
+  async function deleteCategory(cat){
+    if(!confirm(`"${cat.name}" delete karna hai? Iske providers bhi delete karne padenge alag se.`)) return;
+    if(!firebaseReady){ showToast('Demo mode — delete nahi hoga'); return; }
+    await deleteDoc(doc(db, 'categories', cat.id));
+    showToast('Category deleted');
+    loadData();
+  }
+
+  // ---------- PROVIDER CRUD ----------
+  function openProviderModal(p){
+    editingProviderId = p ? p.id : null;
+    document.getElementById('providerModalTitle').textContent = p ? 'Edit Provider' : 'Add Provider';
+    populateCategorySelect();
+    document.getElementById('provCategoryInput').value = p ? p.categoryId : (categories[0]?.id || '');
+    document.getElementById('provNameInput').value = p ? p.name : '';
+    document.getElementById('provTagInput').value = p ? p.tag : '';
+    document.getElementById('provRatingInput').value = p ? p.rating : '4.5';
+    document.getElementById('provPhoneInput').value = p ? p.phone : '+91';
+    document.getElementById('providerOverlay').classList.add('show');
+  }
+  document.getElementById('addProviderBtn').addEventListener('click', ()=>{
+    if(categories.length === 0){ showToast('Pehle ek category banaओ'); return; }
+    openProviderModal(null);
+  });
+  document.getElementById('provCancelBtn').addEventListener('click', ()=>document.getElementById('providerOverlay').classList.remove('show'));
+
+  document.getElementById('provSaveBtn').addEventListener('click', async ()=>{
+    const categoryId = document.getElementById('provCategoryInput').value;
+    const name = document.getElementById('provNameInput').value.trim();
+    const tag = document.getElementById('provTagInput').value.trim();
+    const rating = parseFloat(document.getElementById('provRatingInput').value) || 4.5;
+    const phone = document.getElementById('provPhoneInput').value.trim();
+    if(!name || !phone){ showToast('Name aur phone zaroori hai'); return; }
+    if(!firebaseReady){ showToast('Firebase configure nahi hai — save nahi hoga (demo mode)'); document.getElementById('providerOverlay').classList.remove('show'); return; }
+
+    const data = { categoryId, name, tag, rating, phone, approved: true, available: true };
+    if(editingProviderId){
+      const existing = providers.find(p=>p.id === editingProviderId) || {};
+      await setDoc(doc(db, 'providers', editingProviderId), { ...data, approved: existing.approved !== false, available: existing.available !== false });
+    } else {
+      await addDoc(collection(db, 'providers'), data);
+    }
+    document.getElementById('providerOverlay').classList.remove('show');
+    showToast('Provider saved!');
+    loadData();
+  });
+
+  async function deleteProvider(p){
+    if(!confirm(`"${p.name}" delete karna hai?`)) return;
+    if(!firebaseReady){ showToast('Demo mode — delete nahi hoga'); return; }
+    await deleteDoc(doc(db, 'providers', p.id));
+    showToast('Provider deleted');
+    loadData();
+  }
+
+  async function approveProvider(p){
+    if(!firebaseReady){ showToast('Demo mode — approve nahi hoga'); return; }
+    await updateDoc(doc(db, 'providers', p.id), { approved: true });
+    showToast(`${p.name} approve ho gaya — ab customers ko dikhega`);
+    loadData();
+  }
+
+  // Demo mode: allow entering the app without Firebase configured
+  if(!firebaseReady){
+    const box = document.querySelector('.login-box');
+    const demoBtn = document.createElement('button');
+    demoBtn.textContent = 'Continue in Demo Mode (no Firebase yet)';
+    demoBtn.style.cssText = 'width:100%;background:#f2efe9;color:#1f1c19;border:none;padding:11px 0;border-radius:10px;font-weight:600;margin-top:10px;font-size:.82rem;';
+    demoBtn.addEventListener('click', ()=> enterApp(null));
+    box.appendChild(demoBtn);
+  }
+</script>
+
+</body>
+</html>
