@@ -29,7 +29,7 @@
   /* Header */
   header{
     display:flex; align-items:center; justify-content:space-between;
-    padding:18px 48px;
+    padding:18px 48px; gap:12px; flex-wrap:wrap;
     background:#fbfaf8;
     border-bottom:1px solid #efe9e2;
     position:sticky; top:0; z-index:50;
@@ -44,7 +44,8 @@
     background:var(--orange); color:#fff; border:none;
     padding:10px 20px; border-radius:999px; font-weight:600;
     display:flex; align-items:center; gap:8px;
-    transition:.2s;
+    transition:.2s; max-width:180px; overflow:hidden; text-overflow:ellipsis;
+    white-space:nowrap; flex-shrink:0;
   }
   .signin-btn:hover{background:var(--orange-dark);}
 
@@ -221,6 +222,7 @@
     header{padding:14px 18px;}
     nav{gap:16px; font-size:.9rem;}
     .hero h1{font-size:1.9rem;}
+    .signin-btn{max-width:140px; font-size:.85rem; padding:8px 14px;}
   }
 </style>
 </head>
@@ -532,6 +534,8 @@
   function renderProviderCard(p){
     const initials = p.name.split(' ').map(w=>w[0]).slice(0,2).join('');
     const isBusy = p.available === false;
+    const rating = typeof p.rating === 'number' ? p.rating : 0;
+    const hasRating = rating > 0;
     const avatarHtml = p.photoURL
       ? `<img src="${p.photoURL}" alt="${p.name}" class="avatar avatar-photo">`
       : `<div class="avatar">${initials}</div>`;
@@ -545,11 +549,11 @@
         ${avatarHtml}
         <div style="flex:1;">
           <div class="provider-name">${p.name}</div>
-          <div class="provider-tag">${p.tag}</div>
+          <div class="provider-tag">${p.tag || ''}</div>
         </div>
         <span class="avail-badge ${isBusy ? 'busy' : 'available'}">${isBusy ? '🔴 Busy' : '🟢 Available'}</span>
       </div>
-      <div class="stars star-display">${'★'.repeat(Math.round(p.rating))}${'☆'.repeat(5-Math.round(p.rating))} ${p.rating.toFixed ? p.rating.toFixed(1) : p.rating}${p.numReviews ? ` (${p.numReviews} review${p.numReviews>1?'s':''})` : ''}</div>
+      <div class="stars star-display">${hasRating ? `${'★'.repeat(Math.round(rating))}${'☆'.repeat(5-Math.round(rating))} ${rating.toFixed(1)}${p.numReviews ? ` (${p.numReviews} review${p.numReviews>1?'s':''})` : ''}` : 'No ratings yet'}</div>
       ${workPhotosHtml}
       <div class="provider-actions">
         <a class="btn-small btn-call" href="tel:${p.phone}">📞 Call</a>
