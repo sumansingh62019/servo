@@ -532,12 +532,13 @@
   const providerGrid = document.getElementById('providerGrid');
 
   function renderProviderCard(p){
-    const initials = p.name.split(' ').map(w=>w[0]).slice(0,2).join('');
+    const safeName = p.name || 'Unnamed provider';
+    const initials = safeName.split(' ').map(w=>w[0]).slice(0,2).join('') || '?';
     const isBusy = p.available === false;
     const rating = typeof p.rating === 'number' ? p.rating : 0;
     const hasRating = rating > 0;
     const avatarHtml = p.photoURL
-      ? `<img src="${p.photoURL}" alt="${p.name}" class="avatar avatar-photo">`
+      ? `<img src="${p.photoURL}" alt="${safeName}" class="avatar avatar-photo">`
       : `<div class="avatar">${initials}</div>`;
     const workPhotosHtml = (p.workPhotos && p.workPhotos.length)
       ? `<div class="work-photos-row">${p.workPhotos.slice(0,4).map(url=>`<img src="${url}" alt="Work sample">`).join('')}</div>`
@@ -548,7 +549,7 @@
       <div class="provider-top">
         ${avatarHtml}
         <div style="flex:1;">
-          <div class="provider-name">${p.name}</div>
+          <div class="provider-name">${safeName}</div>
           <div class="provider-tag">${p.tag || ''}</div>
         </div>
         <span class="avail-badge ${isBusy ? 'busy' : 'available'}">${isBusy ? '🔴 Busy' : '🟢 Available'}</span>
@@ -573,7 +574,18 @@
       const sorted = [...list].sort((a,b) => (a.available===false?1:0) - (b.available===false?1:0));
       providersTitle.textContent = `${categoryName} providers near you`;
       providersSub.textContent = `${list.length} verified provider${list.length>1?'s':''} available`;
-      sorted.forEach(p => providerGrid.appendChild(renderProviderCard(p)));
+      sorted.forEach(p => {
+        try{
+          providerGrid.appendChild(renderProviderCard(p));
+        }catch(err){
+          console.error('Failed to render provider card:', p, err);
+          const errDiv = document.createElement('div');
+          errDiv.className = 'no-results';
+          errDiv.style.color = '#e0473f';
+          errDiv.textContent = `⚠️ Error showing "${p.name || 'a provider'}": ${err.message}`;
+          providerGrid.appendChild(errDiv);
+        }
+      });
     } else {
       providersTitle.textContent = 'No providers found';
       providersSub.textContent = categoryName ? `We couldn't find results for "${categoryName}"` : '';
