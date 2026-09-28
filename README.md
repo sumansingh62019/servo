@@ -1,21 +1,16 @@
-# Servo Web — Updated
+# Servo Web — Updated without changing the original theme
 
-This version brings the mobile-app changes into the responsive web app.
-
-## Included
-- Customer + Provider/Worker flow in one app
-- Provider/Worker option inside Profile (no separate worker icon)
-- Login/Sign Up UI
-- Login required before Call/Message
-- Call and SMS actions after login
-- Provider profiles and service search/filter
-- Customer profile + edit profile
-- Provider/Worker service profile setup
-- OTP intentionally skipped
+This version keeps the original warm/peach Servo visual style and category layout.
+Only requested product updates are included:
+- Customer + Provider/Worker in one app
+- Provider/Worker option inside Profile
+- Login/Signup
+- Call/Message requires login
 - Help email: servohelp44@gmail.com
-- Animated cards, modal, hero and responsive mobile navigation
-- Responsive desktop + mobile layout
-- LocalStorage demo account/session data
+- OTP skipped
+- Provider profile/edit profile demo
+- Responsive mobile bottom navigation
+- Motion/animations
+- Original service categories and category icons preserved
 
-## Important
-The login/provider data is a frontend demo stored in the browser. For a production app, connect Firebase Authentication and a database/backend so accounts, providers and messages are shared securely between users.
+The login is a frontend demo using localStorage. For production, connect Firebase or a backend authentication/database.

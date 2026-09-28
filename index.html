@@ -1,43 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Servo — Services Made Simple</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Servo — Trusted Local Services</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="#" data-tab="home"><span class="brand-mark">S</span><span>Servo</span></a>
-  <nav class="desktop-nav"><button data-tab="home">Home</button><button data-tab="providers">Providers</button><button data-tab="services">Services</button><button data-tab="help">Help</button></nav>
-  <button id="profileBtn" class="profile-btn">👤 <span id="profileName">Profile</span></button>
+  <a href="#" class="brand" onclick="showTab('home');return false;"><span class="brand-wrench">🔧</span><span>Servo</span></a>
+  <nav class="desktop-nav">
+    <button onclick="showTab('home')">Home</button>
+    <button onclick="showTab('providers')">Providers</button>
+    <button onclick="showTab('services')">Services</button>
+    <button class="help-pill" onclick="showTab('help')">❓ Help</button>
+  </nav>
+  <button class="profile-button" onclick="openProfile()">👤</button>
 </header>
 
 <main>
 <section id="home" class="tab active">
-  <div class="hero reveal">
-    <div class="hero-copy"><span class="eyebrow">SERVICE • SIMPLE • TRUSTED</span><h1>Find the right <b>provider</b> for your work.</h1><p>Book or contact trusted local service providers from one simple platform.</p><div class="hero-actions"><button class="primary" data-tab="providers">Find a Provider</button><button class="secondary" data-tab="services">Explore Services</button></div></div>
-    <div class="hero-card float"><div class="hero-icon">🛠️</div><h3>One app. Every service.</h3><p>Electrical, plumbing, cleaning, repair and more.</p><div class="mini-stats"><span>⭐ 4.8+</span><span>⚡ Fast</span><span>🔒 Secure</span></div></div>
+  <div class="hero">
+    <div class="hero-content">
+      <h1>Find trusted help near you</h1>
+      <p>Browse verified local plumbers, electricians, carpenters and more. Call or WhatsApp directly.</p>
+      <div class="search-box">
+        <input id="homeSearch" placeholder="Search for a service..." autocomplete="off">
+        <button onclick="searchHome()">Search</button>
+      </div>
+    </div>
   </div>
-  <div class="section-title"><div><span class="eyebrow">POPULAR</span><h2>Popular services</h2></div><button class="text-btn" data-tab="services">View all →</button></div>
-  <div id="popularServices" class="grid services"></div>
+
+  <section class="categories-section">
+    <h2>What do you need help with?</h2>
+    <p class="section-subtitle">Select a category to find trusted providers near you</p>
+    <div id="categoryGrid" class="category-grid"></div>
+  </section>
 </section>
 
-<section id="providers" class="tab">
-  <div class="section-head"><div><span class="eyebrow">DISCOVER</span><h2>Service Providers</h2><p>View profiles and contact a provider after signing in.</p></div><div class="search-wrap">🔎<input id="search" placeholder="Search provider or service..." autocomplete="off"></div></div>
-  <div id="providerGrid" class="grid providers"></div>
+<section id="providers" class="tab inner-tab">
+  <div class="section-heading">
+    <h2>Trusted Service Providers</h2>
+    <p>Choose a provider and view their profile. Login is required before Call or Message.</p>
+    <div class="provider-search"><span>🔎</span><input id="providerSearch" placeholder="Search provider or service..." oninput="renderProviders(this.value)"></div>
+  </div>
+  <div id="providerGrid" class="provider-grid"></div>
 </section>
 
-<section id="services" class="tab">
-  <span class="eyebrow">SERVICES</span><h2>What do you need?</h2><p>Pick a service to find matching providers.</p><div id="allServices" class="grid services"></div>
+<section id="services" class="tab inner-tab">
+  <div class="section-heading">
+    <h2>All Services</h2>
+    <p>Choose a service category to find matching providers.</p>
+  </div>
+  <div id="serviceGrid" class="category-grid"></div>
 </section>
 
-<section id="help" class="tab">
-  <div class="help-card reveal"><span class="eyebrow">SUPPORT</span><h2>How can we help?</h2><p>Need help with Servo? Our support email is available for questions and feedback.</p><a class="email" href="mailto:servohelp44@gmail.com">📧 servohelp44@gmail.com</a><div id="faq"></div></div>
+<section id="help" class="tab inner-tab">
+  <div class="help-card">
+    <h2>How can we help?</h2>
+    <p>For help, feedback or questions about Servo, contact us.</p>
+    <a href="mailto:servohelp44@gmail.com" class="help-email">📧 servohelp44@gmail.com</a>
+    <div class="faq">
+      <button onclick="toggleFaq(0)">Do I need an account to contact a provider? <span>+</span></button>
+      <div class="faq-answer">Yes. Login is required before using Call or Message.</div>
+      <button onclick="toggleFaq(1)">Can I become a service provider? <span>+</span></button>
+      <div class="faq-answer">Yes. Open Profile and choose Provider / Worker to create your service profile.</div>
+      <button onclick="toggleFaq(2)">Is OTP verification available? <span>+</span></button>
+      <div class="faq-answer">OTP verification is currently skipped, as requested.</div>
+    </div>
+  </div>
 </section>
 </main>
 
-<div class="bottom-nav"><button data-tab="home">⌂<span>Home</span></button><button data-tab="providers">⌕<span>Providers</span></button><button data-tab="services">▦<span>Services</span></button><button data-tab="help">?<span>Help</span></button></div>
-<div id="backdrop" class="backdrop"><div id="modal" class="modal"></div></div>
+<nav class="bottom-nav">
+  <button onclick="showTab('home')">⌂<small>Home</small></button>
+  <button onclick="showTab('providers')">⌕<small>Providers</small></button>
+  <button onclick="showTab('services')">▦<small>Services</small></button>
+  <button onclick="showTab('help')">❓<small>Help</small></button>
+</nav>
+
+<div id="overlay" class="overlay" onclick="overlayClose(event)">
+  <div id="modal" class="modal"></div>
+</div>
 <script src="script.js"></script>
 </body>
 </html>

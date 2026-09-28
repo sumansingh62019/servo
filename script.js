@@ -1,35 +1,173 @@
-const providers=[
- {name:'Aman Kumar',service:'Electrician',rating:'4.8',icon:'⚡',phone:'9876543210',city:'Patna',bio:'Electrical installation, wiring and home electrical repair.'},
- {name:'Rahul Sharma',service:'Plumber',rating:'4.7',icon:'🔧',phone:'9876543211',city:'Patna',bio:'Plumbing repair, leakage fixing and bathroom work.'},
- {name:'Neha Singh',service:'Home Cleaning',rating:'4.9',icon:'🧹',phone:'9876543212',city:'Patna',bio:'Home and office cleaning services.'},
- {name:'Vikash Kumar',service:'AC Repair',rating:'4.6',icon:'❄️',phone:'9876543213',city:'Patna',bio:'AC service, installation and cooling repair.'},
- {name:'Pooja Devi',service:'Beauty Service',rating:'4.8',icon:'💇',phone:'9876543214',city:'Patna',bio:'At-home beauty and grooming services.'},
- {name:'Ravi Raj',service:'Carpenter',rating:'4.7',icon:'🪚',phone:'9876543215',city:'Patna',bio:'Furniture repair, fitting and carpentry work.'}
+const categories=[
+['🧱','Construction ka kaam','Raj Mistri (Mason)','#f3e6df'],
+['🎨','Paint karna','Painter / Paint Mistri','#f3e8fb'],
+['🧩','Tiles lagana','Tile Mistri / Tile Installer','#e6f0f7'],
+['🚰','Paani aur pipe fitting','Plumber / Nal Mistri','#e4eefb'],
+['🔌','Bijli ka kaam','Electrician','#fdf6d8'],
+['🪚','Lakdi aur furniture','Carpenter (Badhai)','#fbedcf'],
+['🔲','False Ceiling (POP/Gypsum)','False Ceiling Mistri / POP Mistri','#eef0f2'],
+['🪟','Aluminium door-window','Aluminium Fabricator','#e7f1fb'],
+['🔷','Glass lagana','Glass Installer / Glazier','#e6f6fb'],
+['🔩','Steel grill, gate, railing','Welder / Fabricator','#efeef0'],
+['🪨','Marble aur Granite','Marble Mistri / Granite Installer','#f2ede6'],
+['❄️','AC lagana aur repair','AC Technician','#e3f4fb'],
+['📹','CCTV lagana','CCTV Technician','#eceef2'],
+['🌞','Solar panel lagana','Solar Technician','#fdf3d6'],
+['🛋️','Interior design','Interior Designer','#f6e9f1'],
+['🏗️','Ghar ka naksha aur planning','Architect','#e9f0eb'],
+['🧹','House Cleaning','House Cleaner','#e5f7ec'],
+['🚽','Bathroom and Toilet Cleaning','Bathroom Cleaning Specialist','#e6f7f3'],
+['🛢️','Water Tank Cleaning','Tank Cleaning Technician','#e3f0f9']
 ];
-const services=[['⚡','Electrician'],['🔧','Plumber'],['🧹','Cleaning'],['❄️','AC Repair'],['💇','Beauty'],['🪚','Carpenter'],['🛠️','Appliance Repair'],['🚗','Vehicle Service']];
-const $=s=>document.querySelector(s);const state={logged:localStorage.getItem('servoLoggedIn')==='true',role:localStorage.getItem('servoRole')||'Customer',name:localStorage.getItem('servoName')||'User',email:localStorage.getItem('servoEmail')||''};
-function modal(html){$('#modal').innerHTML=html;$('#backdrop').classList.add('show')}function closeModal(){$('#backdrop').classList.remove('show')}$('#backdrop').onclick=e=>{if(e.target.id==='backdrop')closeModal()};
-function tabs(){document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{const id=b.dataset.tab;if(!$('#'+id))return;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));$('#'+id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(id==='providers')render($('#search').value||'')})}
-function serviceCards(id,arr=services){$(id).innerHTML=arr.map((s,i)=>`<button class="service" style="animation-delay:${i*55}ms" onclick="filterService('${s[1]}')"><div class="icon">${s[0]}</div><h3>${s[1]}</h3><p class="muted">Find providers</p></button>`).join('')}
-function render(q=''){const x=providers.filter(p=>(p.name+' '+p.service+' '+p.city).toLowerCase().includes(q.toLowerCase()));$('#providerGrid').innerHTML=x.map((p,i)=>`<article class="provider" style="animation-delay:${i*55}ms"><div class="provider-top"><div class="picon">${p.icon}</div><div><h3>${p.name}</h3><span class="muted">${p.service} • ${p.city}</span></div></div><div class="stars">★ ${p.rating}</div><p class="muted">${p.bio}</p><div class="actions"><button class="view" onclick="viewProvider('${p.name}')">View Profile</button><button class="contact" onclick="contactProvider('${p.name}')">Contact</button></div></article>`).join('')||'<div class="empty">No providers found. Try another search.</div>'}
-function filterService(s){$('#search').value=s;document.querySelector('[data-tab="providers"]').click();render(s)}
-function login(){modal(`<button class="close" onclick="closeModal()">×</button><h2>Sign in to Servo</h2><p class="muted">Login is required before calling or messaging a provider.</p><input id="loginEmail" type="email" placeholder="Email" autocomplete="email"><input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password"><button class="primary" onclick="doLogin()">Login</button><button class="option" onclick="signup()">Create new account</button><div class="notice">Demo web login is stored locally in this browser. Connect Firebase/backend for production authentication.</div>`)}
-function signup(){modal(`<button class="close" onclick="closeModal()">×</button><h2>Create account</h2><input id="signupName" placeholder="Full name"><input id="signupEmail" type="email" placeholder="Email"><input id="signupPassword" type="password" placeholder="Password"><button class="primary" onclick="doSignup()">Create Account</button><p class="muted">OTP verification is skipped as requested.</p>`)}
-function doLogin(){const email=$('#loginEmail').value.trim();if(!email){alert('Please enter your email.');return}state.logged=true;state.email=email;state.name=email.split('@')[0];state.role='Customer';saveState();closeModal();updateProfile()}
-function doSignup(){const name=$('#signupName').value.trim();const email=$('#signupEmail').value.trim();if(!name||!email){alert('Please enter your name and email.');return}state.logged=true;state.name=name;state.email=email;state.role='Customer';saveState();closeModal();updateProfile()}
-function saveState(){localStorage.setItem('servoLoggedIn',String(state.logged));localStorage.setItem('servoRole',state.role);localStorage.setItem('servoName',state.name);localStorage.setItem('servoEmail',state.email)}
-function contactProvider(name){if(!state.logged){login();return}const p=providers.find(x=>x.name===name);modal(`<button class="close" onclick="closeModal()">×</button><h2>${p.name}</h2><p class="muted">${p.service} • ${p.city}</p><p>Choose how you want to contact this provider.</p><div class="actions"><button class="contact" onclick="location.href='tel:${p.phone}'">📞 Call</button><button class="contact" onclick="location.href='sms:${p.phone}'">💬 Message</button></div>`)}
-function viewProvider(name){const p=providers.find(x=>x.name===name);modal(`<button class="close" onclick="closeModal()">×</button><div class="profile-box"><div class="profile-avatar">${p.icon}</div><h2>${p.name}</h2><p class="muted">${p.service} • ${p.city}</p><p>⭐ ${p.rating} rating</p><p class="muted">${p.bio}</p><button class="primary" style="width:100%" onclick="contactProvider('${p.name}')">Contact Provider</button></div>`)}
-function profileMenu(){if(!state.logged){login();return}modal(`<button class="close" onclick="closeModal()">×</button><div class="profile-box"><div class="profile-avatar">${state.role==='Provider'?'🔧':'🙂'}</div><h2>${state.name}</h2><p class="muted">${state.email||'Signed in to Servo'}</p><div class="notice">Current role: <b>${state.role}</b></div><button class="option" onclick="editProfile()">✏️ Edit Profile</button><button class="option" onclick="chooseRole()">🔧 Provider / Worker</button>${state.role==='Provider'?'<button class="option" onclick="providerProfile()">🛠️ My Service Profile</button>':''}<button class="option" onclick="logout()">🚪 Logout</button></div>`)}
-function chooseRole(){modal(`<button class="close" onclick="closeModal()">×</button><h2>Choose account type</h2><p class="muted">The Provider / Worker option is available inside Profile.</p><div class="role-grid"><button class="role-card" onclick="setRole('Customer')"><b>👤 Customer</b><br><small>Find and contact services</small></button><button class="role-card" onclick="setRole('Provider')"><b>🔧 Provider / Worker</b><br><small>Offer your services</small></button></div>`)}
-function setRole(role){state.role=role;saveState();role==='Provider'?providerProfile():profileMenu()}
-function editProfile(){modal(`<button class="close" onclick="closeModal()">×</button><h2>Edit Profile</h2><label>Name</label><input id="editName" value="${escapeHtml(state.name)}"><label>Email</label><input id="editEmail" type="email" value="${escapeHtml(state.email)}"><button class="primary" onclick="saveProfile()">Save Changes</button>`)}
-function saveProfile(){state.name=$('#editName').value.trim()||state.name;state.email=$('#editEmail').value.trim()||state.email;saveState();closeModal();updateProfile()}
-function providerProfile(){modal(`<button class="close" onclick="closeModal()">×</button><h2>My Service Profile</h2><p class="muted">Set up the basic details customers can see.</p><input id="workerService" placeholder="Service (e.g. Electrician)" value="${escapeHtml(localStorage.getItem('servoWorkerService')||'')}"><input id="workerCity" placeholder="City" value="${escapeHtml(localStorage.getItem('servoWorkerCity')||'')}"><textarea id="workerBio" placeholder="Short service description">${escapeHtml(localStorage.getItem('servoWorkerBio')||'')}</textarea><button class="primary" onclick="saveWorkerProfile()">Save Service Profile</button><div class="notice">This web demo saves provider details locally. A backend is needed to publish them to all customers.</div>`)}
-function saveWorkerProfile(){localStorage.setItem('servoWorkerService',$('#workerService').value.trim());localStorage.setItem('servoWorkerCity',$('#workerCity').value.trim());localStorage.setItem('servoWorkerBio',$('#workerBio').value.trim());closeModal();alert('Service profile saved on this browser.')}
-function logout(){state.logged=false;state.role='Customer';state.email='';saveState();closeModal();updateProfile()}
-function updateProfile(){$('#profileName').textContent=state.logged?'Account':'Profile'}
-function escapeHtml(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
-const faqs=[['How do I contact a provider?','Open a provider profile and choose Call or Message. You must be logged in first.'],['Can I become a provider?','Yes. Open Profile → Provider / Worker and set up your service profile.'],['Is OTP required?','No. OTP verification is currently skipped as requested.'],['How do I edit my profile?','Open the Profile icon, then choose Edit Profile.'],['How do I get support?','Email Servo Help at servohelp44@gmail.com.']];
-$('#faq').innerHTML=faqs.map(x=>`<button class="faqq">${x[0]} <span>+</span></button><div class="faqa">${x[1]}</div>`).join('');document.querySelectorAll('.faqq').forEach(q=>q.onclick=()=>{const a=q.nextElementSibling;a.classList.toggle('open');q.querySelector('span').textContent=a.classList.contains('open')?'−':'+'});
-$('#profileBtn').onclick=profileMenu;$('#search').oninput=e=>render(e.target.value);serviceCards('#popularServices',services.slice(0,4));serviceCards('#allServices');tabs();render();updateProfile();
+
+const providers=[
+{name:'Aman Kumar',service:'Electrician',rating:'4.8',icon:'⚡',phone:'9876543210',city:'Patna',bio:'Electrical installation, wiring and home electrical repair.'},
+{name:'Rahul Sharma',service:'Plumber',rating:'4.7',icon:'🔧',phone:'9876543211',city:'Patna',bio:'Plumbing repair, leakage fixing and bathroom work.'},
+{name:'Neha Singh',service:'House Cleaning',rating:'4.9',icon:'🧹',phone:'9876543212',city:'Patna',bio:'Home and office cleaning services.'},
+{name:'Vikash Kumar',service:'AC Repair',rating:'4.6',icon:'❄️',phone:'9876543213',city:'Patna',bio:'AC service, installation and cooling repair.'},
+{name:'Pooja Devi',service:'Beauty Service',rating:'4.8',icon:'💇',phone:'9876543214',city:'Patna',bio:'At-home beauty and grooming services.'},
+{name:'Ravi Raj',service:'Carpenter',rating:'4.7',icon:'🪚',phone:'9876543215',city:'Patna',bio:'Furniture repair, fitting and carpentry work.'}
+];
+
+const state={
+ logged:localStorage.getItem('servoLoggedIn')==='true',
+ name:localStorage.getItem('servoName')||'User',
+ email:localStorage.getItem('servoEmail')||'',
+ role:localStorage.getItem('servoRole')||'Customer'
+};
+const $=s=>document.querySelector(s);
+
+function showTab(id){
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+ const el=document.getElementById(id); if(el) el.classList.add('active');
+ window.scrollTo({top:0,behavior:'smooth'});
+ if(id==='providers')renderProviders($('#providerSearch')?.value||'');
+}
+
+function renderCategories(target,arr=categories){
+ $(target).innerHTML=arr.map((c,i)=>`
+ <button class="category-card" style="animation-delay:${i*35}ms" onclick="findService(${i})">
+  <div class="category-icon" style="background:${c[3]}">${c[0]}</div>
+  <h3>${c[1]}</h3><p>${c[2]}</p>
+ </button>`).join('');
+}
+function findService(i){
+ const term=categories[i][1];
+ showTab('providers');
+ $('#providerSearch').value=term;
+ renderProviders(term);
+}
+function searchHome(){
+ const q=$('#homeSearch').value.trim();
+ showTab('providers');
+ $('#providerSearch').value=q;
+ renderProviders(q);
+}
+function renderProviders(q=''){
+ const term=q.toLowerCase();
+ const list=providers.filter(p=>(p.name+' '+p.service+' '+p.city+' '+p.bio).toLowerCase().includes(term));
+ $('#providerGrid').innerHTML=list.map((p,i)=>`
+ <article class="provider-card" style="animation-delay:${i*50}ms">
+  <div class="provider-top"><div class="provider-avatar">${p.icon}</div><div><h3>${p.name}</h3><div class="provider-meta">${p.service} • ${p.city}</div></div></div>
+  <div class="rating">⭐ ${p.rating}</div><div class="provider-bio">${p.bio}</div>
+  <div class="actions"><button class="view-btn" onclick="viewProvider('${p.name}')">View Profile</button><button class="contact-btn" onclick="contactProvider('${p.name}')">Call / Message</button></div>
+ </article>`).join('') || '<p style="grid-column:1/-1;text-align:center;color:#777">No providers found.</p>';
+}
+function viewProvider(name){
+ const p=providers.find(x=>x.name===name); if(!p)return;
+ openModal(`<button class="close" onclick="closeModal()">×</button>
+ <div class="profile-avatar-large">${p.icon}</div><h2 style="text-align:center">${p.name}</h2>
+ <p style="text-align:center"><b>${p.service}</b> • ${p.city}<br>⭐ ${p.rating}</p>
+ <p>${p.bio}</p>
+ <button class="modal-main-btn" onclick="contactProvider('${p.name}')">Call / Message</button>`);
+}
+function contactProvider(name){
+ const p=providers.find(x=>x.name===name); if(!p)return;
+ if(!state.logged){login(name);return}
+ openModal(`<button class="close" onclick="closeModal()">×</button><h2>Contact ${p.name}</h2>
+ <p>Choose how you want to contact this provider.</p>
+ <button class="modal-main-btn" onclick="location.href='tel:${p.phone}'">📞 Call ${p.phone}</button>
+ <button class="modal-secondary" onclick="location.href='sms:${p.phone}'">💬 Message</button>`);
+}
+function openProfile(){
+ if(!state.logged){login();return}
+ openModal(`<button class="close" onclick="closeModal()">×</button>
+ <div class="profile-avatar-large">👤</div><h2 style="text-align:center">${state.name}</h2>
+ <p style="text-align:center">${state.email}</p>
+ <button class="modal-main-btn" onclick="chooseRole()">👨‍🔧 Provider / Worker</button>
+ <button class="modal-secondary" onclick="editProfile()">✏️ Edit Profile</button>
+ <button class="modal-secondary" onclick="logout()">Logout</button>`);
+}
+function login(returnName=''){
+ openModal(`<button class="close" onclick="closeModal()">×</button><h2>Login to Servo</h2>
+ <p>Login is required before you can call or message a provider.</p>
+ <input id="loginEmail" type="email" placeholder="Email">
+ <input id="loginPassword" type="password" placeholder="Password">
+ <button class="modal-main-btn" onclick="doLogin()">Login</button>
+ <button class="modal-secondary" onclick="signup()">Create new account</button>
+ <div class="notice">OTP verification is skipped. This web demo stores login locally.</div>`);
+}
+function signup(){
+ openModal(`<button class="close" onclick="closeModal()">×</button><h2>Create account</h2>
+ <input id="signupName" placeholder="Full name"><input id="signupEmail" type="email" placeholder="Email">
+ <input id="signupPassword" type="password" placeholder="Password">
+ <button class="modal-main-btn" onclick="doSignup()">Create Account</button>
+ <div class="notice">OTP verification is skipped as requested.</div>`);
+}
+function doLogin(){
+ const email=$('#loginEmail').value.trim(); if(!email)return alert('Please enter your email.');
+ state.logged=true;state.email=email;state.name=email.split('@')[0];state.role='Customer';save();closeModal();
+}
+function doSignup(){
+ const name=$('#signupName').value.trim(),email=$('#signupEmail').value.trim();
+ if(!name||!email)return alert('Please enter name and email.');
+ state.logged=true;state.name=name;state.email=email;state.role='Customer';save();closeModal();
+}
+function chooseRole(){
+ openModal(`<button class="close" onclick="closeModal()">×</button><h2>Choose your role</h2><p>You can use the same account as a customer or service provider.</p>
+ <div class="role-grid"><button class="role-card" onclick="setRole('Customer')">👤<br><b>Customer</b><br><small>Find and contact services</small></button>
+ <button class="role-card" onclick="setRole('Provider / Worker')">👨‍🔧<br><b>Provider / Worker</b><br><small>Offer your services</small></button></div>`);
+}
+function setRole(role){
+ state.role=role;save();
+ if(role==='Provider / Worker') workerProfile(); else openProfile();
+}
+function workerProfile(){
+ openModal(`<button class="close" onclick="closeModal()">×</button><h2>Provider / Worker Profile</h2>
+ <p>Create or edit the service information customers will see.</p>
+ <input id="workerService" placeholder="Service name">
+ <input id="workerCity" placeholder="City">
+ <textarea id="workerBio" placeholder="About your service"></textarea>
+ <button class="modal-main-btn" onclick="saveWorker()">Save Profile</button>`);
+}
+function saveWorker(){
+ localStorage.setItem('servoWorkerService',$('#workerService').value.trim());
+ localStorage.setItem('servoWorkerCity',$('#workerCity').value.trim());
+ localStorage.setItem('servoWorkerBio',$('#workerBio').value.trim());
+ alert('Provider profile saved.');closeModal();
+}
+function editProfile(){
+ openModal(`<button class="close" onclick="closeModal()">×</button><h2>Edit Profile</h2>
+ <input id="editName" value="${escapeHtml(state.name)}" placeholder="Full name">
+ <input id="editEmail" value="${escapeHtml(state.email)}" placeholder="Email">
+ <button class="modal-main-btn" onclick="saveProfile()">Save Changes</button>`);
+}
+function saveProfile(){
+ state.name=$('#editName').value.trim()||state.name;state.email=$('#editEmail').value.trim()||state.email;save();closeModal();
+}
+function save(){
+ localStorage.setItem('servoLoggedIn',String(state.logged));
+ localStorage.setItem('servoName',state.name);
+ localStorage.setItem('servoEmail',state.email);
+ localStorage.setItem('servoRole',state.role);
+}
+function logout(){state.logged=false;state.role='Customer';save();closeModal()}
+function openModal(html){$('#modal').innerHTML=html;$('#overlay').classList.add('show')}
+function closeModal(){$('#overlay').classList.remove('show')}
+function overlayClose(e){if(e.target.id==='overlay')closeModal()}
+function toggleFaq(i){const answers=document.querySelectorAll('.faq-answer');answers[i].classList.toggle('open')}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+
+renderCategories('#categoryGrid');
+renderCategories('#serviceGrid');
+renderProviders();
