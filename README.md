@@ -1,23 +1,21 @@
-# GitHub Pages ke liye ready files
+# Servo Web — Updated
 
-Ye teenों files **already rename ho chuki hain** — bas inko GitHub repository mein upload kar do (jaisा README pehле bataया gaya thа).
+This version brings the mobile-app changes into the responsive web app.
 
-- `index.html` → Customer App (ye "Home" URL banेgा)
-- `worker.html` → Worker App
-- `admin.html` → Admin Panel
+## Included
+- Customer + Provider/Worker flow in one app
+- Provider/Worker option inside Profile (no separate worker icon)
+- Login/Sign Up UI
+- Login required before Call/Message
+- Call and SMS actions after login
+- Provider profiles and service search/filter
+- Customer profile + edit profile
+- Provider/Worker service profile setup
+- OTP intentionally skipped
+- Help email: servohelp44@gmail.com
+- Animated cards, modal, hero and responsive mobile navigation
+- Responsive desktop + mobile layout
+- LocalStorage demo account/session data
 
-## Upload karnе ke steps:
-1. GitHub.com pe naya repository banaओ (Public, naam jaise `servo-app`)
-2. "Add file" → "Upload files"
-3. Teenों files (`index.html`, `worker.html`, `admin.html`) ko drag-drop karo
-4. "Commit changes" dabaओ
-5. Settings → Pages → Branch: `main`, folder `/ (root)` → Save
-
-## Live links (kuch minute baad):
-```
-Customer App → https://TUMHARA-USERNAME.github.io/servo-app/
-Worker App   → https://TUMHARA-USERNAME.github.io/servo-app/worker.html
-Admin Panel  → https://TUMHARA-USERNAME.github.io/servo-app/admin.html
-```
-
-`TUMHARA-USERNAME` ko apnе GitHub username se badal dena.
+## Important
+The login/provider data is a frontend demo stored in the browser. For a production app, connect Firebase Authentication and a database/backend so accounts, providers and messages are shared securely between users.
