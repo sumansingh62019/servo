@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Servo — Find trusted help near you</title>
+<title>Servo — Find local service providers</title>
 <style>
   :root{
     --orange:#f4791f;
@@ -215,12 +215,6 @@
   .modal .switch{margin-top:16px; text-align:center; font-size:.88rem; color:var(--ink-soft);}
   .modal .switch a{color:var(--orange); font-weight:600;}
 
-  /* Small motion only — original theme/layout stays unchanged */
-  .page.active .hero, .page.active .cat-section, .page.active .provider-card{animation:servoFadeUp .28s ease both;}
-  @keyframes servoFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-  #profileOverlay .modal, #providerLoginOverlay .modal{animation:servoModal .2s ease both;}
-  @keyframes servoModal{from{opacity:0;transform:scale(.98) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
-
   @media (max-width:640px){
     header{padding:14px 18px;}
     nav{gap:16px; font-size:.9rem;}
@@ -237,19 +231,15 @@
     <a href="#" class="active" id="homeNavLink">Home</a>
     <a href="#" id="helpNavLink">Help</a>
     <a href="#" id="loginNavLink">Login</a>
-    <a href="#" id="providerLoginNavLink">🔧 Provider Login</a>
   </nav>
-  <div style="display:flex;align-items:center;gap:8px;">
-    <button class="signin-btn" id="profileBtn" style="background:#fdeadb;color:#e0650c;">👤 Profile</button>
-    <button class="signin-btn" id="signInBtn">👤 Sign In</button>
-  </div>
+  <button class="signin-btn" id="signInBtn">👤 Sign In</button>
 </header>
 
 <!-- HOME PAGE -->
 <div class="page active" id="homePage">
   <section class="hero">
-    <h1>Find trusted help near you</h1>
-    <p>Browse verified local plumbers, electricians, carpenters and more. Call or WhatsApp directly.</p>
+    <h1>Find local service providers</h1>
+    <p>Browse plumbers, electricians, carpenters and more listed on Servo. Call or WhatsApp them directly.</p>
     <div class="search-bar">
       <span>🔍</span>
       <input type="text" id="searchInput" placeholder="Search for a service...">
@@ -259,7 +249,7 @@
 
   <section class="cat-section">
     <h2>What do you need help with?</h2>
-    <p>Select a category to find trusted providers near you</p>
+    <p>Select a category to see the providers listed in it</p>
     <div class="cat-grid" id="catGrid"></div>
   </section>
 </div>
@@ -269,7 +259,7 @@
   <div class="providers-page-header">
     <button class="back-link" id="backToHome">← Back to categories</button>
     <h1 id="providersTitle">Providers</h1>
-    <p id="providersSub">Trusted providers near you</p>
+    <p id="providersSub">Providers listed</p>
   </div>
   <section class="results-section">
     <div class="provider-grid" id="providerGrid"></div>
@@ -294,7 +284,7 @@
       </div>
       <div class="faq-item">
         <div class="faq-q">🔧 Mujhe apni service list karni hai (main worker hoon)</div>
-        <div class="faq-a">Worker App download karo aur wahan sign up karo. Admin approve karne ke baad aap yahan dikhne lagenge.</div>
+        <div class="faq-a">Worker page ya app mein sign up karo aur apni profile bharo. Servo admin approve karne ke baad aap yahan dikhne lagenge.</div>
       </div>
       <div class="faq-item">
         <div class="faq-q">🚫 Provider ne sahi kaam nahi kiya, complaint karni hai</div>
@@ -306,42 +296,12 @@
       </div>
     </div>
 
-    <a href="https://wa.me/918409484980?text=Hi%2C%20mujhe%20Servo%20app%20ke%20baare%20mein%20help%20chahiye" target="_blank" class="help-contact-btn">
-      💬 WhatsApp Support 1 (84094 84980)
+    <a href="https://wa.me/918409484980?text=Hi%2C%20mujhe%20Servo%20app%20ke%20baare%20mein%20help%20chahiye" target="_blank" rel="noopener" class="help-contact-btn">
+      💬 Chat with Servo Support on WhatsApp
     </a>
-    <a href="https://wa.me/916201914241?text=Hi%2C%20mujhe%20Servo%20app%20ke%20baare%20mein%20help%20chahiye" target="_blank" class="help-contact-btn" style="margin-top:10px; background:#1ebe5a;">
-      💬 WhatsApp Support 2 (62019 14241)
+    <a href="mailto:servohelp44@gmail.com" class="help-contact-btn" style="margin-top:10px; background:#fff; color:#1f1c19; border:1px solid #eae5df;">
+      ✉️ Email Servo Support
     </a>
-    <div style="margin-top:12px;text-align:center;color:#7a736b;font-size:.86rem;">
-      📧 Help Email: <a href="mailto:servohelp44@gmail.com" style="color:#e0650c;font-weight:700;">servohelp44@gmail.com</a>
-    </div>
-  </div>
-</div>
-
-<!-- Profile / Provider options -->
-<div class="overlay" id="profileOverlay">
-  <div class="modal">
-    <button class="close-x" id="closeProfileModal">✕</button>
-    <h3>Profile</h3>
-    <p class="sub">Customer account aur provider account options</p>
-    <button class="submit" id="profileLoginBtn">👤 Customer Login</button>
-    <button class="submit" id="profileProviderLoginBtn" style="margin-top:10px;">🔧 Provider Login</button>
-    <button class="submit" id="profileBackBtn" style="margin-top:10px;background:#f2efe9;color:#1f1c19;">← Back</button>
-  </div>
-</div>
-
-<!-- Provider login modal -->
-<div class="overlay" id="providerLoginOverlay">
-  <div class="modal">
-    <button class="close-x" id="closeProviderLoginModal">✕</button>
-    <h3>🔧 Provider Login</h3>
-    <p class="sub">Provider account se apni profile manage karein.</p>
-    <input type="email" id="providerEmailInput" placeholder="Provider Email">
-    <input type="password" id="providerPasswordInput" placeholder="Password">
-    <div id="providerLoginError" style="color:#e0473f;font-size:.82rem;margin-bottom:8px;display:none;"></div>
-    <button class="submit" id="providerLoginSubmit">Login</button>
-    <button class="submit" id="providerBackBtn" style="margin-top:10px;background:#f2efe9;color:#1f1c19;">← Back</button>
-    <div style="margin-top:14px;text-align:center;font-size:.82rem;color:#7a736b;">New provider? Use the Worker/Provider app to create your account.</div>
   </div>
 </div>
 
@@ -433,91 +393,16 @@
     { name:"Water Tank Cleaning", worker:"Tank Cleaning Technician", icon:"🛢️", bg:"#e3f0f9" },
   ];
 
-  const FALLBACK_PROVIDERS = {
-    "Construction ka kaam":[
-      {name:"Ramlal Mistri", tag:"Raj Mistri (Mason) • 10 yrs exp", rating:4.7, phone:"+919812345601"},
-      {name:"Sharma Raj Mistri", tag:"Raj Mistri (Mason) • Construction Work", rating:4.6, phone:"+919812345602"},
-    ],
-    "Paint karna":[
-      {name:"ColorCraft Ajay", tag:"Painter • Interior/Exterior", rating:4.7, phone:"+919812345610"},
-      {name:"BrightWalls Studio", tag:"Painting Contractor", rating:4.5, phone:"+919812345611"},
-    ],
-    "Tiles lagana":[
-      {name:"Suresh Tile Works", tag:"Tile Mistri • Floor & Wall", rating:4.6, phone:"+919812345620"},
-      {name:"Ganesh Tiles", tag:"Tile Installer", rating:4.5, phone:"+919812345621"},
-    ],
-    "Paani aur pipe fitting":[
-      {name:"Ramesh Kumar", tag:"Plumber • 6 yrs exp", rating:4.8, phone:"+919812345603"},
-      {name:"Amit Solutions", tag:"Plumbing Services", rating:4.6, phone:"+919812345604"},
-      {name:"Suresh & Sons", tag:"24x7 Plumber", rating:4.7, phone:"+919812345605"},
-    ],
-    "Bijli ka kaam":[
-      {name:"Vikram Electricals", tag:"Electrician • 8 yrs exp", rating:4.9, phone:"+919812345606"},
-      {name:"PowerFix Rahul", tag:"Home Wiring Expert", rating:4.5, phone:"+919812345607"},
-    ],
-    "Lakdi aur furniture":[
-      {name:"Deepak Woodworks", tag:"Carpenter • Furniture", rating:4.7, phone:"+919812345608"},
-      {name:"Manoj Carpentry", tag:"Doors & Fittings", rating:4.4, phone:"+919812345609"},
-    ],
-    "False Ceiling (POP/Gypsum)":[
-      {name:"POP Arts Deepak", tag:"False Ceiling Mistri", rating:4.6, phone:"+919812345622"},
-      {name:"Gypsum Creations", tag:"POP Mistri", rating:4.5, phone:"+919812345623"},
-    ],
-    "Aluminium door-window":[
-      {name:"Metro Aluminium Works", tag:"Aluminium Fabricator", rating:4.6, phone:"+919812345624"},
-      {name:"Shine Aluminium Fabricators", tag:"Doors & Windows", rating:4.5, phone:"+919812345625"},
-    ],
-    "Glass lagana":[
-      {name:"Clear View Glass", tag:"Glass Installer / Glazier", rating:4.6, phone:"+919812345626"},
-      {name:"Glassline Glaziers", tag:"Glass Fitting Services", rating:4.5, phone:"+919812345627"},
-    ],
-    "Steel grill, gate, railing":[
-      {name:"Steel Craft Welding", tag:"Welder / Fabricator", rating:4.7, phone:"+919812345628"},
-      {name:"Iron Gate Fabricators", tag:"Grill & Railing Work", rating:4.5, phone:"+919812345629"},
-    ],
-    "Marble aur Granite":[
-      {name:"Marble Palace", tag:"Marble Mistri", rating:4.7, phone:"+919812345630"},
-      {name:"Granite World Installers", tag:"Granite Installer", rating:4.5, phone:"+919812345631"},
-    ],
-    "AC lagana aur repair":[
-      {name:"CoolTech Sanjay", tag:"AC Repair & Service", rating:4.8, phone:"+919812345612"},
-      {name:"Frostline Services", tag:"AC Installation", rating:4.6, phone:"+919812345613"},
-    ],
-    "CCTV lagana":[
-      {name:"SecureView CCTV", tag:"CCTV Technician", rating:4.7, phone:"+919812345632"},
-      {name:"EyeWatch Installations", tag:"CCTV & Security Setup", rating:4.5, phone:"+919812345633"},
-    ],
-    "Solar panel lagana":[
-      {name:"SunPower Solar", tag:"Solar Technician", rating:4.7, phone:"+919812345634"},
-      {name:"Green Energy Solar", tag:"Solar Panel Installation", rating:4.6, phone:"+919812345635"},
-    ],
-    "Interior design":[
-      {name:"Design Studio Interiors", tag:"Interior Designer", rating:4.8, phone:"+919812345636"},
-      {name:"HomeCraft Interiors", tag:"Interior Design & Decor", rating:4.6, phone:"+919812345637"},
-    ],
-    "Ghar ka naksha aur planning":[
-      {name:"Build Right Architects", tag:"Architect", rating:4.8, phone:"+919812345638"},
-      {name:"Vaastu Design Associates", tag:"Architect & Planning", rating:4.6, phone:"+919812345639"},
-    ],
-    "House Cleaning":[
-      {name:"SparkleHome Team", tag:"House Cleaner • Deep Cleaning", rating:4.9, phone:"+919812345640"},
-      {name:"QuickClean Priya", tag:"Home & Office Cleaning", rating:4.6, phone:"+919812345641"},
-    ],
-    "Bathroom and Toilet Cleaning":[
-      {name:"HygieneFirst Services", tag:"Bathroom Cleaning Specialist", rating:4.7, phone:"+919812345642"},
-      {name:"FreshBath Cleaners", tag:"Toilet Deep Cleaning", rating:4.5, phone:"+919812345643"},
-    ],
-    "Water Tank Cleaning":[
-      {name:"AquaClean Tank Services", tag:"Tank Cleaning Technician", rating:4.7, phone:"+919812345644"},
-      {name:"PureTank Solutions", tag:"Water Tank Cleaning & Disinfection", rating:4.6, phone:"+919812345645"},
-    ],
-  };
+  // No sample providers are ever shown: only real providers from Firestore.
+  const FALLBACK_PROVIDERS = {};
 
   let categories = [];
   let providersByCategory = {};
+  let loadFailed = false;
 
   async function loadData(){
     if(!firebaseReady){
+      loadFailed = true;
       categories = FALLBACK_CATEGORIES;
       providersByCategory = FALLBACK_PROVIDERS;
       return;
@@ -540,16 +425,11 @@
         const cat = cats.find(c=>c.id === p.categoryId);
         if(cat) (byCategory[cat.name] ||= []).push(p);
       });
-      // Keep the original built-in providers visible when Firestore has no provider for a category.
-      cats.forEach(c=>{
-        if(!byCategory[c.name] || byCategory[c.name].length === 0){
-          byCategory[c.name] = (FALLBACK_PROVIDERS[c.name] || []).map(p=>({...p}));
-        }
-      });
       categories = cats;
       providersByCategory = byCategory;
     }catch(e){
-      console.error('Firestore fetch failed, using fallback data', e);
+      console.error('Firestore fetch failed', e);
+      loadFailed = true;
       categories = FALLBACK_CATEGORIES;
       providersByCategory = FALLBACK_PROVIDERS;
     }
@@ -573,24 +453,6 @@
   const providersTitle = document.getElementById('providersTitle');
   const providersSub = document.getElementById('providersSub');
   const providerGrid = document.getElementById('providerGrid');
-
-  function requireCustomerLogin(action){
-    if(firebaseReady){
-      // onAuthStateChanged updates currentFirebaseUser below
-      if(!currentFirebaseUser){
-        alert(`Provider se ${action} karne ke liye pehle Customer Login karein.`);
-        openModal('signin');
-        return false;
-      }
-    } else if(localStorage.getItem('servo_demo_logged_in') !== '1'){
-      alert(`Provider se ${action} karne ke liye pehle Customer Login karein.`);
-      openModal('signin');
-      return false;
-    }
-    return true;
-  }
-
-  let currentFirebaseUser = null;
 
   function renderProviderCard(p){
     const safeName = p.name || 'Unnamed provider';
@@ -618,21 +480,13 @@
       <div class="stars star-display">${hasRating ? `${'★'.repeat(Math.round(rating))}${'☆'.repeat(5-Math.round(rating))} ${rating.toFixed(1)}${p.numReviews ? ` (${p.numReviews} review${p.numReviews>1?'s':''})` : ''}` : 'No ratings yet'}</div>
       ${workPhotosHtml}
       <div class="provider-actions">
-        <button class="btn-small btn-call provider-call-btn" type="button">📞 Call</button>
-        <button class="btn-small btn-whatsapp provider-wa-btn" type="button">💬 WhatsApp</button>
+        <a class="btn-small btn-call" href="tel:${p.phone}">📞 Call</a>
+        <a class="btn-small btn-whatsapp" href="https://wa.me/${p.phone.replace('+','')}" target="_blank">💬 WhatsApp</a>
       </div>
       <button class="btn-rate" data-provider-id="${p.id||''}">⭐ Rate this provider</button>
     `;
     const rateBtn = card.querySelector('.btn-rate');
-    rateBtn.addEventListener('click', ()=> {
-      if(requireCustomerLogin('rate')) openRatingModal(p, card);
-    });
-    card.querySelector('.provider-call-btn').addEventListener('click', ()=>{
-      if(requireCustomerLogin('call')) window.location.href = `tel:${p.phone}`;
-    });
-    card.querySelector('.provider-wa-btn').addEventListener('click', ()=>{
-      if(requireCustomerLogin('message')) window.open(`https://wa.me/${p.phone.replace('+','')}`, '_blank');
-    });
+    rateBtn.addEventListener('click', ()=> openRatingModal(p, card));
     return card;
   }
 
@@ -641,8 +495,8 @@
     providerGrid.innerHTML = '';
     if(list && list.length){
       const sorted = [...list].sort((a,b) => (a.available===false?1:0) - (b.available===false?1:0));
-      providersTitle.textContent = `${categoryName} providers near you`;
-      providersSub.textContent = `${list.length} verified provider${list.length>1?'s':''} available`;
+      providersTitle.textContent = `${categoryName} providers`;
+      providersSub.textContent = `${list.length} provider${list.length>1?'s':''} listed`;
       sorted.forEach(p => {
         try{
           providerGrid.appendChild(renderProviderCard(p));
@@ -658,7 +512,9 @@
     } else {
       providersTitle.textContent = 'No providers found';
       providersSub.textContent = categoryName ? `We couldn't find results for "${categoryName}"` : '';
-      providerGrid.innerHTML = `<p class="no-results">Try going back and choosing a category like Plumbing, Electrical, Carpentry, AC Repair, Painting or Cleaning.</p>`;
+      providerGrid.innerHTML = loadFailed
+        ? `<p class="no-results">Providers load nahi ho paaye. Internet check karke page refresh karein.</p>`
+        : `<p class="no-results">Abhi is category mein koi provider listed nahi hai. Wapas jaakar doosri category try karein.</p>`;
     }
     homePage.classList.remove('active');
     providersPage.classList.add('active');
@@ -726,7 +582,7 @@
     authPasswordInput.value = '';
     if(m === 'signup'){
       modalTitle.textContent = 'Create your Servo account';
-      modalSub.textContent = 'Join Servo to book trusted local help.';
+      modalSub.textContent = 'Sign in to call or WhatsApp local providers.';
       modalSubmit.textContent = 'Sign Up';
       switchLink.textContent = 'Sign in';
       switchLink.previousSibling.textContent = 'Already have an account? ';
@@ -753,7 +609,7 @@
   }
 
   if(firebaseReady){
-    onAuthStateChanged(auth, (user)=> { currentFirebaseUser = user; updateSignInButton(user); });
+    onAuthStateChanged(auth, (user)=> updateSignInButton(user));
   } else {
     signInBtn.addEventListener('click', ()=>openModal('signin'));
   }
@@ -791,38 +647,6 @@
       authErrorMsg.textContent = e.message;
       authErrorMsg.style.display = 'block';
     }
-  });
-
-  // ---------- Profile + Provider Login ----------
-  const profileOverlay = document.getElementById('profileOverlay');
-  const providerLoginOverlay = document.getElementById('providerLoginOverlay');
-  function openProviderLogin(){
-    profileOverlay.classList.remove('show');
-    providerLoginOverlay.classList.add('show');
-  }
-  document.getElementById('profileBtn').addEventListener('click', ()=>profileOverlay.classList.add('show'));
-  document.getElementById('closeProfileModal').addEventListener('click', ()=>profileOverlay.classList.remove('show'));
-  document.getElementById('profileBackBtn').addEventListener('click', ()=>profileOverlay.classList.remove('show'));
-  document.getElementById('profileLoginBtn').addEventListener('click', ()=>{profileOverlay.classList.remove('show');openModal('signin');});
-  document.getElementById('profileProviderLoginBtn').addEventListener('click', openProviderLogin);
-  document.getElementById('providerLoginNavLink').addEventListener('click', e=>{e.preventDefault();openProviderLogin();});
-  document.getElementById('closeProviderLoginModal').addEventListener('click', ()=>providerLoginOverlay.classList.remove('show'));
-  document.getElementById('providerBackBtn').addEventListener('click', ()=>providerLoginOverlay.classList.remove('show'));
-  providerLoginOverlay.addEventListener('click', e=>{if(e.target===providerLoginOverlay) providerLoginOverlay.classList.remove('show');});
-  profileOverlay.addEventListener('click', e=>{if(e.target===profileOverlay) profileOverlay.classList.remove('show');});
-  document.getElementById('providerLoginSubmit').addEventListener('click', async ()=>{
-    const email=document.getElementById('providerEmailInput').value.trim();
-    const password=document.getElementById('providerPasswordInput').value;
-    const err=document.getElementById('providerLoginError');
-    err.style.display='none';
-    if(!email || !password){err.textContent='Email aur password dono zaroori hain';err.style.display='block';return;}
-    // Provider authentication uses the same Firebase Auth accounts created by the Worker app.
-    if(!firebaseReady){err.textContent='Firebase configure nahi hai';err.style.display='block';return;}
-    try{
-      await signInWithEmailAndPassword(auth,email,password);
-      providerLoginOverlay.classList.remove('show');
-      alert('Provider login successful.');
-    }catch(e){err.textContent=e.message;err.style.display='block';}
   });
 
   // ---------- Rating modal ----------

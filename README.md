@@ -1,14 +1,23 @@
-# Servo Web Updated v6
+# GitHub Pages ke liye ready files
 
-Built from the original Servo customer web app so the original theme, category icons, provider cards and provider fallback data remain intact.
+Ye teenों files **already rename ho chuki hain** — bas inko GitHub repository mein upload kar do (jaisा README pehле bataया gaya thа).
 
-Added:
-- Original providers restored/fallback when Firestore has no provider for a category
-- Customer login required before Call / WhatsApp / Rating
-- Provider Login visible in header and Profile
-- Profile menu with customer/provider options
-- Back buttons for provider/profile/provider-login flows
-- Help email: servohelp44@gmail.com
-- Small motion animations without changing the original visual theme
+- `index.html` → Customer App (ye "Home" URL banेgा)
+- `worker.html` → Worker App
+- `admin.html` → Admin Panel
 
-Firebase config is retained from the original project. Provider Login uses the same Firebase Auth accounts used by the Worker app.
+## Upload karnе ke steps:
+1. GitHub.com pe naya repository banaओ (Public, naam jaise `servo-app`)
+2. "Add file" → "Upload files"
+3. Teenों files (`index.html`, `worker.html`, `admin.html`) ko drag-drop karo
+4. "Commit changes" dabaओ
+5. Settings → Pages → Branch: `main`, folder `/ (root)` → Save
+
+## Live links (kuch minute baad):
+```
+Customer App → https://TUMHARA-USERNAME.github.io/servo-app/
+Worker App   → https://TUMHARA-USERNAME.github.io/servo-app/worker.html
+Admin Panel  → https://TUMHARA-USERNAME.github.io/servo-app/admin.html
+```
+
+`TUMHARA-USERNAME` ko apnе GitHub username se badal dena.

@@ -37,6 +37,26 @@
   .auth-box button.primary:hover{background:var(--orange-dark);}
   .switch-mode{text-align:center; font-size:.86rem; color:var(--ink-soft); margin-top:16px;}
   .switch-mode a{color:var(--orange); font-weight:700; text-decoration:none;}
+
+  .photo-upload-row{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:8px;}
+  .profile-photo-preview{width:84px; height:84px; border-radius:50%; object-fit:cover; border:2px solid var(--card-border);}
+  .profile-photo-preview.large{width:96px; height:96px;}
+  .profile-photo-placeholder{
+    width:84px; height:84px; border-radius:50%; background:#f2efe9; color:#b5aca2;
+    display:flex; align-items:center; justify-content:center; font-size:2rem; border:2px solid var(--card-border);
+  }
+  .profile-photo-placeholder.large{width:96px; height:96px; margin:0 auto;}
+  .photo-btn{
+    background:#f2efe9; color:var(--ink); border:none; padding:9px 16px; border-radius:8px;
+    font-weight:600; font-size:.82rem;
+  }
+  .photo-btn:hover{background:#eae5df;}
+
+  .work-photos-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;}
+  .work-photo-thumb{position:relative; aspect-ratio:1; border-radius:10px; overflow:hidden; border:1px solid var(--card-border);}
+  .work-photo-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  .work-photo-empty{grid-column:1/-1; text-align:center; color:var(--ink-soft); font-size:.85rem; padding:20px 0;}
+  .upload-spinner{font-size:.82rem; color:var(--ink-soft); text-align:center; margin-top:8px;}
   #authError{color:var(--red); font-size:.85rem; margin-top:10px; display:none;}
 
   /* App shell */
@@ -138,7 +158,18 @@
 
     <!-- PROFILE FORM (create or edit) -->
     <div class="card" id="profileFormCard" style="display:none;">
-      <h2 id="profileFormTitle">Apni profile banaओ</h2>
+      <h2 id="profileFormTitle">Apni profile banao</h2>
+
+      <div class="field" style="text-align:center;">
+        <label>Profile Photo</label>
+        <div class="photo-upload-row">
+          <img id="pfPhotoPreview" class="profile-photo-preview" src="" alt="" style="display:none;">
+          <div id="pfPhotoPlaceholder" class="profile-photo-placeholder">👤</div>
+          <input type="file" id="pfPhotoInput" accept="image/*" style="display:none;">
+          <button type="button" class="photo-btn" id="pfPhotoBtn">Photo Choose Karo</button>
+        </div>
+      </div>
+
       <div class="field">
         <label>Category</label>
         <select id="pfCategory"></select>
@@ -148,8 +179,8 @@
         <input type="text" id="pfName" placeholder="jaise Ramesh Kumar">
       </div>
       <div class="field">
-        <label>Description / Tag (jaise "Electrician • 8 yrs exp")</label>
-        <input type="text" id="pfTag" placeholder="jaise Electrician • 8 yrs exp">
+        <label>Aapka kaam (description) — years of experience yahan mat likhna, sirf naam field ke neeche wale box mein likhein</label>
+        <input type="text" id="pfTag" placeholder="jaise Electrician • 8 saal ka experience">
       </div>
       <div class="field">
         <label>Phone number (with +91)</label>
@@ -160,13 +191,17 @@
 
     <!-- PROFILE VIEW (after created) -->
     <div class="card profile-view" id="profileViewCard" style="display:none;">
+      <div style="text-align:center; margin-bottom:18px;">
+        <img id="pvPhoto" class="profile-photo-preview large" src="" alt="" style="display:none;">
+        <div id="pvPhotoPlaceholder" class="profile-photo-placeholder large">👤</div>
+      </div>
       <h2>Aapki Profile</h2>
       <div class="row"><span class="label">Naam</span><span class="val" id="pvName"></span></div>
       <div class="row"><span class="label">Category</span><span class="val" id="pvCategory"></span></div>
-      <div class="row"><span class="label">Tag</span><span class="val" id="pvTag"></span></div>
+      <div class="row"><span class="label">Kaam</span><span class="val" id="pvTag"></span></div>
       <div class="row"><span class="label">Phone</span><span class="val" id="pvPhone"></span></div>
       <div class="row">
-        <span class="label">Available (customers ko dikhogे)</span>
+        <span class="label">Available (customers ko dikhoge)</span>
         <span class="avail-toggle">
           <label class="switch">
             <input type="checkbox" id="pvAvailableToggle">
@@ -175,6 +210,15 @@
         </span>
       </div>
       <button class="edit-btn" id="pvEditBtn">Edit Profile</button>
+    </div>
+
+    <!-- WORK PHOTOS (portfolio) -->
+    <div class="card" id="workPhotosCard" style="display:none;">
+      <h2>Aapke Kaam ki Photos (Portfolio)</h2>
+      <p style="font-size:.82rem; color:var(--ink-soft); margin-bottom:16px;">Purane kaam ki photos yahan add karo — customers ko aapke kaam ki quality dikhegi</p>
+      <div class="work-photos-grid" id="workPhotosGrid"></div>
+      <input type="file" id="workPhotoInput" accept="image/*" style="display:none;" multiple>
+      <button type="button" class="photo-btn" id="addWorkPhotoBtn" style="width:100%; margin-top:14px;">+ Work Photo Add Karo</button>
     </div>
   </div>
 </div>
@@ -187,8 +231,11 @@
     getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
-    getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc
+    getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import {
+    getStorage, ref, uploadBytes, getDownloadURL
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
   // ============ SAME CONFIG AS admin-panel.html / servo-app.html ============
   const firebaseConfig = {
@@ -202,12 +249,13 @@
   // ============================================================================
 
   let firebaseReady = false;
-  let app, auth, db;
+  let app, auth, db, storage;
   try {
     if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY") {
       app = initializeApp(firebaseConfig);
       auth = getAuth(app);
       db = getFirestore(app);
+      storage = getStorage(app);
       firebaseReady = true;
     }
   } catch (e) {
@@ -236,7 +284,7 @@
     mode = m;
     if(m === 'signup'){
       authTitle.textContent = '🔧 Servo Worker';
-      authSub.textContent = 'Naya account banaओ (provider ke roop mein)';
+      authSub.textContent = 'Naya account banao (provider ke roop mein)';
       authSubmitBtn.textContent = 'Sign Up';
       switchText.textContent = 'Already account hai?';
       switchLink.textContent = 'Login';
@@ -300,12 +348,15 @@
   }
 
   // ---------- Profile load/save ----------
+  let pendingPhotoFile = null;
+
   async function loadProfile(uid){
     const ref = doc(db, 'providers', uid);
     const snap = await getDoc(ref);
     if(snap.exists()){
       currentProfile = { id: uid, ...snap.data() };
       showProfileView();
+      renderWorkPhotos();
     } else {
       currentProfile = null;
       showProfileForm(true);
@@ -315,23 +366,38 @@
   function showProfileForm(isNew){
     document.getElementById('profileFormCard').style.display = 'block';
     document.getElementById('profileViewCard').style.display = 'none';
+    document.getElementById('workPhotosCard').style.display = 'none';
     document.getElementById('statusBanner').style.display = 'none';
-    document.getElementById('profileFormTitle').textContent = isNew ? 'Apni profile banaओ' : 'Profile edit karo';
+    document.getElementById('profileFormTitle').textContent = isNew ? 'Apni profile banao' : 'Profile edit karo';
+    pendingPhotoFile = null;
+    const preview = document.getElementById('pfPhotoPreview');
+    const placeholder = document.getElementById('pfPhotoPlaceholder');
     if(!isNew && currentProfile){
       document.getElementById('pfCategory').value = currentProfile.categoryId;
       document.getElementById('pfName').value = currentProfile.name;
       document.getElementById('pfTag').value = currentProfile.tag;
       document.getElementById('pfPhone').value = currentProfile.phone;
+      if(currentProfile.photoURL){
+        preview.src = currentProfile.photoURL;
+        preview.style.display = 'block';
+        placeholder.style.display = 'none';
+      } else {
+        preview.style.display = 'none';
+        placeholder.style.display = 'flex';
+      }
     } else {
       document.getElementById('pfName').value = '';
       document.getElementById('pfTag').value = '';
       document.getElementById('pfPhone').value = '+91';
+      preview.style.display = 'none';
+      placeholder.style.display = 'flex';
     }
   }
 
   function showProfileView(){
     document.getElementById('profileFormCard').style.display = 'none';
     document.getElementById('profileViewCard').style.display = 'block';
+    document.getElementById('workPhotosCard').style.display = 'block';
     const cat = categories.find(c=>c.id === currentProfile.categoryId);
     document.getElementById('pvName').textContent = currentProfile.name;
     document.getElementById('pvCategory').textContent = cat ? cat.name : '(unknown)';
@@ -339,16 +405,39 @@
     document.getElementById('pvPhone').textContent = currentProfile.phone || '';
     document.getElementById('pvAvailableToggle').checked = currentProfile.available !== false;
 
+    const pvPhoto = document.getElementById('pvPhoto');
+    const pvPhotoPlaceholder = document.getElementById('pvPhotoPlaceholder');
+    if(currentProfile.photoURL){
+      pvPhoto.src = currentProfile.photoURL;
+      pvPhoto.style.display = 'block';
+      pvPhotoPlaceholder.style.display = 'none';
+    } else {
+      pvPhoto.style.display = 'none';
+      pvPhotoPlaceholder.style.display = 'flex';
+    }
+
     const banner = document.getElementById('statusBanner');
     banner.style.display = 'flex';
     if(currentProfile.approved){
       banner.className = 'status-banner approved';
-      banner.innerHTML = `<span>✅ Aapki profile verified hai — customers ko dikh rahi hai</span>`;
+      banner.innerHTML = `<span>✅ Aapki profile approve ho gayi hai — customers ko dikh rahi hai</span>`;
     } else {
       banner.className = 'status-banner pending';
       banner.innerHTML = `<span>⏳ Admin approval ka wait hai — approve hote hi customers ko dikhegi</span>`;
     }
   }
+
+  // ---------- Profile photo selection (preview only, uploads on Save) ----------
+  document.getElementById('pfPhotoBtn').addEventListener('click', ()=> document.getElementById('pfPhotoInput').click());
+  document.getElementById('pfPhotoInput').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    pendingPhotoFile = file;
+    const preview = document.getElementById('pfPhotoPreview');
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+    document.getElementById('pfPhotoPlaceholder').style.display = 'none';
+  });
 
   document.getElementById('pfSaveBtn').addEventListener('click', async ()=>{
     const categoryId = document.getElementById('pfCategory').value;
@@ -360,16 +449,37 @@
 
     const uid = auth.currentUser.uid;
     const isNew = !currentProfile;
-    const data = {
-      categoryId, name, tag, phone,
-      rating: currentProfile ? currentProfile.rating : 4.5,
-      available: currentProfile ? currentProfile.available !== false : true,
-      approved: currentProfile ? !!currentProfile.approved : false, // new profiles need admin approval
-    };
-    await setDoc(doc(db, 'providers', uid), data);
-    currentProfile = { id: uid, ...data };
-    showToast(isNew ? 'Profile ban gayi! Admin approve karega jald hi.' : 'Profile update ho gayi!');
-    showProfileView();
+    const saveBtn = document.getElementById('pfSaveBtn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+
+    let photoURL = currentProfile ? currentProfile.photoURL : null;
+    try{
+      if(pendingPhotoFile){
+        saveBtn.textContent = 'Photo upload ho rahi hai...';
+        const photoRef = ref(storage, `providers/${uid}/profile.jpg`);
+        await uploadBytes(photoRef, pendingPhotoFile);
+        photoURL = await getDownloadURL(photoRef);
+      }
+
+      const data = {
+        categoryId, name, tag, phone, photoURL,
+        rating: currentProfile ? currentProfile.rating : 4.5,
+        available: currentProfile ? currentProfile.available !== false : true,
+        approved: currentProfile ? !!currentProfile.approved : false, // new profiles need admin approval
+      };
+      await setDoc(doc(db, 'providers', uid), data, { merge: true });
+      currentProfile = { id: uid, ...currentProfile, ...data };
+      pendingPhotoFile = null;
+      showToast(isNew ? 'Profile ban gayi! Admin approve karega jald hi.' : 'Profile update ho gayi!');
+      showProfileView();
+      renderWorkPhotos();
+    }catch(e){
+      showToast('Error: ' + e.message);
+    }finally{
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Profile';
+    }
   });
 
   document.getElementById('pvEditBtn').addEventListener('click', ()=> showProfileForm(false));
@@ -380,6 +490,52 @@
     await updateDoc(doc(db, 'providers', uid), { available: e.target.checked });
     currentProfile.available = e.target.checked;
     showToast(e.target.checked ? 'Ab aap "Available" dikhoge' : 'Ab aap "Busy" dikhoge');
+  });
+
+  // ---------- Work Photos (portfolio) ----------
+  function renderWorkPhotos(){
+    const grid = document.getElementById('workPhotosGrid');
+    const photos = (currentProfile && currentProfile.workPhotos) || [];
+    if(photos.length === 0){
+      grid.innerHTML = `<div class="work-photo-empty">Abhi koi photo add nahi ki. Neeche button se add karo.</div>`;
+      return;
+    }
+    grid.innerHTML = photos.map(url => `
+      <div class="work-photo-thumb"><img src="${url}" alt="Work photo"></div>
+    `).join('');
+  }
+
+  document.getElementById('addWorkPhotoBtn').addEventListener('click', ()=> document.getElementById('workPhotoInput').click());
+  document.getElementById('workPhotoInput').addEventListener('change', async (e)=>{
+    const files = [...e.target.files];
+    if(files.length === 0) return;
+    if(!firebaseReady){ showToast('Firebase configure nahi hai'); return; }
+    if(!currentProfile){ showToast('Pehle profile save karo'); return; }
+
+    const btn = document.getElementById('addWorkPhotoBtn');
+    btn.disabled = true;
+    btn.textContent = `Uploading 0/${files.length}...`;
+    const uid = auth.currentUser.uid;
+    let uploaded = 0;
+    try{
+      for(const file of files){
+        const photoRef = ref(storage, `providers/${uid}/work/${Date.now()}_${file.name}`);
+        await uploadBytes(photoRef, file);
+        const url = await getDownloadURL(photoRef);
+        await updateDoc(doc(db, 'providers', uid), { workPhotos: arrayUnion(url) });
+        currentProfile.workPhotos = [...(currentProfile.workPhotos || []), url];
+        uploaded++;
+        btn.textContent = `Uploading ${uploaded}/${files.length}...`;
+      }
+      showToast('Work photos add ho gayi!');
+      renderWorkPhotos();
+    }catch(err){
+      showToast('Error: ' + err.message);
+    }finally{
+      btn.disabled = false;
+      btn.textContent = '+ Work Photo Add Karo';
+      e.target.value = '';
+    }
   });
 </script>
 
